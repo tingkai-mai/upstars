@@ -12,3 +12,13 @@ export async function requireUser() {
     if (!session) redirect("/login");
     return session.user;
 }
+
+export function isAdmin(user: { role?: string | null }) {
+    return user.role === "admin";
+}
+
+/** Returns the signed-in user if they're an admin, or null. Redirects to /login if signed out. */
+export async function getAdminUser() {
+    const user = await requireUser();
+    return isAdmin(user) ? user : null;
+}

@@ -1,8 +1,10 @@
 "use client";
-import { useState, type ReactNode, type SubmitEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { MIN_PASSWORD_LENGTH } from "@/lib/users";
+import { Field, FormError, inputClass, primaryButtonClass } from "@/components/form";
 
 type Mode = "login" | "signup";
 
@@ -26,11 +28,6 @@ const COPY = {
         switchHref: "/login",
     },
 } as const;
-
-const MIN_PASSWORD_LENGTH = 8; // better-auth default
-
-const inputClass =
-    "h-12 w-full rounded-xl border border-zinc-300 bg-white px-4 text-base text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-300 dark:focus:ring-zinc-300/20";
 
 async function submitAuth(mode: Mode, form: FormData) {
     const email = String(form.get("email")).trim();
@@ -61,7 +58,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             // Next keeps this page alive (hidden) after navigating, so clear the credentials.
             form.reset();
             setShowPassword(false);
-            router.replace("/syllabus");
+            router.replace("/");
         } catch {
             setError("Couldn't reach the server. Check your connection and try again.");
         } finally {
@@ -119,16 +116,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
                     </div>
                 </Field>
 
-                {error && (
-                    <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/50 dark:text-red-300">
-                        {error}
-                    </p>
-                )}
+                <FormError message={error} />
 
                 <button
                     type="submit"
                     disabled={pending}
-                    className="mt-1 h-12 w-full rounded-xl bg-zinc-900 text-base font-medium text-white transition hover:bg-zinc-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                    className={`mt-1 ${primaryButtonClass}`}
                 >
                     {pending ? copy.pending : copy.submit}
                 </button>
@@ -140,18 +133,6 @@ export function AuthForm({ mode }: { mode: Mode }) {
                     {copy.switchLabel}
                 </Link>
             </p>
-        </div>
-    );
-}
-
-function Field({ label, htmlFor, hint, children }: { label: string; htmlFor: string; hint?: string; children: ReactNode }) {
-    return (
-        <div className="flex flex-col gap-2">
-            <label htmlFor={htmlFor} className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {label}
-            </label>
-            {children}
-            {hint && <p className="text-xs text-zinc-500 dark:text-zinc-400">{hint}</p>}
         </div>
     );
 }

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 
 async function RedirectIfSignedIn() {
-    if (await getSession()) redirect("/syllabus");
+    if (await getSession()) redirect("/");
     return null;
 }
 

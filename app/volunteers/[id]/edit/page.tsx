@@ -1,0 +1,46 @@
+import { Suspense } from "react";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getAdminUser } from "@/lib/session";
+import { PageHeader } from "@/components/page-header";
+import { AdminOnly } from "../../admin-only";
+import { UserForm } from "../../user-form";
+import { DeleteUserButton } from "../../delete-user-button";
+import { deleteUser, updateUser } from "../../actions";
+import { getUser } from "../../queries";
+
+export const metadata: Metadata = { title: "Edit user" };
+
+type Props = PageProps<"/volunteers/[id]/edit">;
+
+export default function EditUserPage({ params }: Props) {
+    return (
+        <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+            <EditUser params={params} />
+        </Suspense>
+    );
+}
+
+async function EditUser({ params }: Pick<Props, "params">) {
+    const admin = await getAdminUser();
+    if (!admin) return <AdminOnly />;
+
+    const { id } = await params;
+    const member = await getUser(id);
+    if (!member) notFound();
+
+    const isSelf = id === admin.id;
+
+    return (
+        <>
+            <PageHeader title="Edit user" back={{ href: `/volunteers/${id}`, label: member.name }} />
+            <UserForm action={updateUser.bind(null, id)} defaults={member} mode="edit" roleLocked={isSelf} />
+            {!isSelf && (
+                <section className="mt-4 flex flex-col gap-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+                    <h2 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Danger zone</h2>
+                    <DeleteUserButton action={deleteUser.bind(null, id)} name={member.name} />
+                </section>
+            )}
+        </>
+    );
+}
