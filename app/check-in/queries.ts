@@ -1,4 +1,4 @@
-import { asc, count, desc, eq, inArray, max } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, max } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import { checkIn, checkInConcept, checkInTest, checkInWorksheet, concept, subject, test, user, week, worksheet } from "@/db/schema";
@@ -91,4 +91,21 @@ export async function listLessonPartners(userId: string, side: "student" | "tuto
         .where(eq(self, userId))
         .groupBy(user.id)
         .orderBy(desc(max(checkIn.lessonDate)));
+}
+
+export type ConceptLesson = { checkInId: string; lessonDate: string; remarks: string; recordedByName: string | null };
+
+/** For one student and subject: concept id → the lessons that covered it, oldest first. */
+export async function listConceptLessons(studentId: string, subjectId: string): Promise<Map<string, ConceptLesson[]>> {
+    const rows = await db
+        .select({ conceptId: checkInConcept.conceptId, checkInId: checkIn.id, lessonDate: checkIn.lessonDate, remarks: checkIn.remarks, recordedByName: recorder.name })
+        .from(checkInConcept)
+        .innerJoin(checkIn, eq(checkInConcept.checkInId, checkIn.id))
+        .leftJoin(recorder, eq(checkIn.recordedBy, recorder.id))
+        .where(and(eq(checkIn.studentId, studentId), eq(checkIn.subjectId, subjectId)))
+        .orderBy(asc(checkIn.lessonDate), asc(checkIn.createdAt));
+
+    const byConcept = new Map<string, ConceptLesson[]>();
+    for (const { conceptId, ...lesson } of rows) byConcept.set(conceptId, [...(byConcept.get(conceptId) ?? []), lesson]);
+    return byConcept;
 }

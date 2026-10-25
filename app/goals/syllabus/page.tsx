@@ -6,6 +6,8 @@ import type { Chapter, Week } from "@/app/syllabus/queries";
 import { loadProgress, type ProgressData } from "../context";
 import { GoalsHeader, percent, ProgressBar } from "../goals-header";
 import { CompletionCheckbox, WeekCompletionCheckbox } from "../completion-checkbox";
+import { ConceptCoverage } from "../concept-coverage";
+import { listConceptLessons, type ConceptLesson } from "@/app/check-in/queries";
 
 export const metadata: Metadata = { title: "Syllabus progress" };
 
@@ -24,6 +26,7 @@ export default function SyllabusProgressPage({ searchParams }: Props) {
 async function SyllabusProgress({ searchParams }: Pick<Props, "searchParams">) {
     const progress = await loadProgress(await searchParams);
     const { student, data } = progress;
+    const conceptLessons = student && data ? await listConceptLessons(student.id, data.plan.subject.id) : new Map<string, ConceptLesson[]>();
 
     return (
         <>
@@ -32,7 +35,7 @@ async function SyllabusProgress({ searchParams }: Pick<Props, "searchParams">) {
                 <section aria-label="Chapters" className="flex flex-col gap-3">
                     {data.plan.chapters.length === 0 && <EmptyState>This subject has no chapters yet.</EmptyState>}
                     {data.plan.chapters.map((chapter) => (
-                        <ChapterProgress key={chapter.id} chapter={chapter} studentId={student.id} data={data} />
+                        <ChapterProgress key={chapter.id} chapter={chapter} studentId={student.id} data={data} conceptLessons={conceptLessons} />
                     ))}
                 </section>
             )}
@@ -40,7 +43,9 @@ async function SyllabusProgress({ searchParams }: Pick<Props, "searchParams">) {
     );
 }
 
-function ChapterProgress({ chapter, studentId, data }: { chapter: Chapter; studentId: string; data: ProgressData }) {
+type Lessons = Map<string, ConceptLesson[]>;
+
+function ChapterProgress({ chapter, studentId, data, conceptLessons }: { chapter: Chapter; studentId: string; data: ProgressData; conceptLessons: Lessons }) {
     const concepts = chapter.weeks.flatMap((w) => w.concepts);
     const done = concepts.filter((c) => data.completion.concepts.has(c.id)).length;
     const value = percent(done, concepts.length);
@@ -75,13 +80,16 @@ function ChapterProgress({ chapter, studentId, data }: { chapter: Chapter; stude
                                 <th scope="col" className="px-3 py-2 font-medium">
                                     Concept
                                 </th>
+                                <th scope="col" className="w-20 px-2 py-2 font-medium">
+                                    Covered
+                                </th>
                                 <th scope="col" className="w-14 px-3 py-2 text-center font-medium">
                                     Done
                                 </th>
                             </tr>
                         </thead>
                         {chapter.weeks.map((week) => (
-                            <WeekProgress key={week.id} week={week} studentId={studentId} data={data} />
+                            <WeekProgress key={week.id} week={week} studentId={studentId} data={data} conceptLessons={conceptLessons} />
                         ))}
                     </table>
                 </div>
@@ -90,7 +98,7 @@ function ChapterProgress({ chapter, studentId, data }: { chapter: Chapter; stude
     );
 }
 
-function WeekProgress({ week, studentId, data }: { week: Week; studentId: string; data: ProgressData }) {
+function WeekProgress({ week, studentId, data, conceptLessons }: { week: Week; studentId: string; data: ProgressData; conceptLessons: Lessons }) {
     const done = week.concepts.filter((c) => data.completion.concepts.has(c.id)).length;
     const weekCell = (
         <th scope="rowgroup" rowSpan={Math.max(1, week.concepts.length)} className="border-r border-zinc-200 px-3 py-2.5 align-top font-normal dark:border-zinc-800">
@@ -111,7 +119,7 @@ function WeekProgress({ week, studentId, data }: { week: Week; studentId: string
             {week.concepts.length === 0 && (
                 <tr>
                     {weekCell}
-                    <td colSpan={2} className="px-3 py-2.5 text-zinc-500 dark:text-zinc-400">
+                    <td colSpan={3} className="px-3 py-2.5 text-zinc-500 dark:text-zinc-400">
                         No concepts yet
                     </td>
                 </tr>
@@ -122,6 +130,9 @@ function WeekProgress({ week, studentId, data }: { week: Week; studentId: string
                     <tr key={concept.id} className="border-t border-zinc-100 first:border-t-0 dark:border-zinc-800/60">
                         {index === 0 && weekCell}
                         <td className={`px-3 py-2.5 align-top ${isDone ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-800 dark:text-zinc-200"}`}>{concept.name}</td>
+                        <td className="px-2 py-1.5 align-top">
+                            <ConceptCoverage conceptName={concept.name} lessons={conceptLessons.get(concept.id) ?? []} completedAt={data.completion.concepts.get(concept.id)} />
+                        </td>
                         <td className="px-3 py-2.5 text-center align-top">
                             <CompletionCheckbox kind="concept" studentId={studentId} itemId={concept.id} done={isDone} label={concept.name} editable={data.canEdit} />
                         </td>

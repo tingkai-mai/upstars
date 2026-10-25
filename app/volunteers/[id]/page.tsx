@@ -108,7 +108,18 @@ async function StudentProfile({ student, access }: { student: Member; access: Ac
                 )}
             </ProfileSection>
 
-            <ProfileSection title="Goals" count={goals.length}>
+            <ProfileSection
+                title="Goals"
+                count={goals.length}
+                action={
+                    <Link
+                        href={`/goals?student=${student.id}`}
+                        className="inline-flex h-10 shrink-0 items-center rounded-xl border border-zinc-300 px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                    >
+                        View progress
+                    </Link>
+                }
+            >
                 {goals.length ? <GoalResults goals={goals} /> : <EmptyState>No goals set yet.</EmptyState>}
             </ProfileSection>
 

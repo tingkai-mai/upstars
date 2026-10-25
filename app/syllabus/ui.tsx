@@ -20,7 +20,8 @@ export function Accordion({ title, subtitle, nested = false, defaultOpen, childr
             >
                 <div className="min-w-0 flex-1">
                     <h3 className={`font-semibold text-zinc-900 dark:text-zinc-50 ${nested ? "text-sm" : ""}`}>{title}</h3>
-                    {subtitle && <p className="text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
+                    {/* A div, not a p: subtitles can hold block content such as a progress bar */}
+                    {subtitle && <div className="text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</div>}
                 </div>
                 <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.75} className="size-4 shrink-0 text-zinc-400 transition group-open/accordion:rotate-180">
                     <path d="m6 8 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />

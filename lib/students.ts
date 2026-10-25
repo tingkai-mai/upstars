@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { pairing, user } from "@/db/schema";
 
@@ -7,16 +7,19 @@ export type StudentOption = { id: string; name: string; email: string };
 
 const studentColumns = { id: user.id, name: user.name, email: user.email };
 
-/** The students whose progress this person can see: admins all, tutors their paired students, students themselves. */
+/**
+ * The students whose progress this person can see: admins and tutors everyone (matching profiles), students themselves.
+ * A tutor's own students come first, so they're the default. Editing is limited separately by canEditStudent.
+ */
 export async function listViewableStudents(viewer: Viewer): Promise<StudentOption[]> {
     if (viewer.role === "admin") return db.select(studentColumns).from(user).where(eq(user.role, "student")).orderBy(asc(user.name));
     if (viewer.role === "tutor") {
         return db
             .select(studentColumns)
-            .from(pairing)
-            .innerJoin(user, eq(pairing.studentId, user.id))
-            .where(and(eq(pairing.tutorId, viewer.id), eq(user.role, "student")))
-            .orderBy(asc(user.name));
+            .from(user)
+            .leftJoin(pairing, and(eq(pairing.studentId, user.id), eq(pairing.tutorId, viewer.id)))
+            .where(eq(user.role, "student"))
+            .orderBy(sql`${pairing.tutorId} IS NULL`, asc(user.name));
     }
     return db.select(studentColumns).from(user).where(and(eq(user.id, viewer.id), eq(user.role, "student")));
 }

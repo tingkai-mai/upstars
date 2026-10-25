@@ -24,7 +24,7 @@ export function GoalsHeader({ tab, progress }: { tab: GoalsTab; progress: Progre
         <>
             <PageHeader title="Goal tracking" back={{ href: "/", label: "Home" }} />
             {!student ? (
-                <EmptyState>{viewer.role === "tutor" ? "You aren't paired with any students yet. Ask an admin to pair you." : "No students yet."}</EmptyState>
+                <EmptyState>No students yet.</EmptyState>
             ) : (
                 <>
                     {/* Students only ever see themselves, so they get a heading rather than a picker */}

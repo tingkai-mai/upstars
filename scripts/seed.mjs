@@ -72,6 +72,16 @@ const REMARKS = [
     "Excellent lesson. {first} is ready to move on from {topic}.",
 ];
 
+/** For lessons that go over the previous week again. */
+const RECAP_REMARKS = [
+    "Recapped {topic} since {first} found it tricky last week. Much more confident now.",
+    "Went over {topic} again. {first} remembered most of it and only needed help with the last few questions.",
+    "Second pass at {topic}: {first} can now explain each step without prompting.",
+];
+
+/** Added when a lesson also revisits concepts from an earlier week. */
+const REVISION_NOTE = " Also revised some earlier concepts.";
+
 // ---------------------------------------------------------------------------------------------
 // Helpers
 
@@ -199,18 +209,33 @@ async function seedPairings(ctx) {
     );
 }
 
-/** Weekly check-ins working through the syllabus, plus the completions they imply. */
+/**
+ * Weekly check-ins working through the syllabus, plus the completions they imply. Concepts can be covered more than
+ * once: some lessons recap the previous week instead of moving on, and some also revise a few earlier concepts.
+ * Completions record only the first time, as in the app.
+ */
 async function seedCheckIns(ctx) {
     const { subjectId, weeks, worksheets, tests } = ctx.syllabus;
     const coverPeople = [...TUTORS.map((t) => t.key), "grace"];
     const rows = { check_in: [], check_in_concept: [], check_in_worksheet: [], check_in_test: [], concept_completion: [], worksheet_completion: [], test_completion: [] };
+    const fill = (template, first, week) => template.replaceAll("{first}", first).replaceAll("{topic}", week.chapter.toLowerCase());
 
     for (const student of STUDENTS) {
         const studentId = ctx.userIds.get(student.key);
         const first = student.name.split(" ")[0];
         const lessons = Math.min(student.lessons, weeks.length);
+        const done = { concept: new Set(), worksheet: new Set(), test: new Set() };
+        let nextWeek = 0; // index into weeks of the next new week
+        let recapNext = false;
+
         for (let index = 0; index < lessons; index++) {
-            const week = weeks[index];
+            // Recap when the last lesson said so, or now and then anyway
+            const recap = nextWeek > 0 && (recapNext || random() < 0.15);
+            const week = recap ? weeks[nextWeek - 1] : weeks[nextWeek++];
+            // Sometimes also revise 1–2 concepts from an earlier week
+            const earlier = weeks.slice(0, Math.max(0, nextWeek - 1)).filter((w) => w.conceptIds.length);
+            const revised = earlier.length && random() < 0.3 ? pick(earlier).conceptIds.slice(0, randomInt(1, 2)) : [];
+
             const lessonDate = addDays(lastSaturday(), -7 * (lessons - 1 - index));
             const usual = index < (student.pastLessons ?? 0) ? student.pastTutor : student.tutor;
             // Now and then someone else covers the lesson
@@ -218,14 +243,14 @@ async function seedCheckIns(ctx) {
             const recordedBy = ctx.userIds.get(tutorKey);
             const id = randomUUID();
 
-            const worksheetIds = worksheets.filter((w) => w.week === week.number && random() < 0.8).map((w) => w.id);
-            const testIds = tests.filter((t) => t.week === week.number && random() < 0.7).map((t) => t.id);
+            const template = pick(recap ? RECAP_REMARKS : REMARKS);
+            recapNext = template.includes("recap next week");
             rows.check_in.push({
                 id,
                 student_id: studentId,
                 subject_id: subjectId,
                 lesson_date: lessonDate,
-                remarks: pick(REMARKS).replaceAll("{first}", first).replaceAll("{topic}", week.chapter.toLowerCase()),
+                remarks: fill(template, first, week) + (revised.length ? REVISION_NOTE : ""),
                 attendance_points: random() < 0.9 ? 2 : 1,
                 behaviour_points: randomInt(random() < 0.1 ? 0 : 1, 2),
                 bonus_points: randomInt(0, 2),
@@ -234,18 +259,17 @@ async function seedCheckIns(ctx) {
             });
 
             const completion = { student_id: studentId, completed_at: lessonTime(lessonDate), recorded_by: recordedBy };
-            for (const conceptId of week.conceptIds) {
-                rows.check_in_concept.push({ check_in_id: id, concept_id: conceptId });
-                rows.concept_completion.push({ ...completion, concept_id: conceptId });
-            }
-            for (const worksheetId of worksheetIds) {
-                rows.check_in_worksheet.push({ check_in_id: id, worksheet_id: worksheetId });
-                rows.worksheet_completion.push({ ...completion, worksheet_id: worksheetId });
-            }
-            for (const testId of testIds) {
-                rows.check_in_test.push({ check_in_id: id, test_id: testId });
-                rows.test_completion.push({ ...completion, test_id: testId });
-            }
+            /** Links the item to this check-in, and marks it done unless it already was. */
+            const cover = (kind, itemId) => {
+                rows[`check_in_${kind}`].push({ check_in_id: id, [`${kind}_id`]: itemId });
+                if (done[kind].has(itemId)) return;
+                done[kind].add(itemId);
+                rows[`${kind}_completion`].push({ ...completion, [`${kind}_id`]: itemId });
+            };
+            for (const conceptId of [...week.conceptIds, ...revised]) cover("concept", conceptId);
+            // Worksheets and tests for this week that aren't done yet (a recap can catch up on them)
+            for (const w of worksheets) if (w.week === week.number && !done.worksheet.has(w.id) && random() < 0.8) cover("worksheet", w.id);
+            for (const t of tests) if (t.week === week.number && !done.test.has(t.id) && random() < 0.7) cover("test", t.id);
         }
     }
     for (const [table, tableRows] of Object.entries(rows)) await insertMany(table, tableRows);
