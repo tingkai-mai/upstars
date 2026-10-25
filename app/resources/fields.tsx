@@ -1,6 +1,8 @@
-import { Field, inputClass } from "@/components/form";
+import { Field, inputClass, textareaClass } from "@/components/form";
 
-export function ResourceFields({ defaults }: { defaults?: { name: string; url: string } }) {
+export const MAX_DESCRIPTION_LENGTH = 200;
+
+export function ResourceFields({ defaults }: { defaults?: { name: string; url: string; description: string | null } }) {
     return (
         <>
             <Field label="Name" htmlFor="name">
@@ -9,6 +11,9 @@ export function ResourceFields({ defaults }: { defaults?: { name: string; url: s
             <Field label="Link" htmlFor="url">
                 {/* type="text" rather than "url" so "example.com" is accepted; the server adds https:// */}
                 <input id="url" name="url" type="text" inputMode="url" required autoComplete="off" autoCapitalize="none" spellCheck={false} defaultValue={defaults?.url} placeholder="https://…" className={inputClass} />
+            </Field>
+            <Field label="Description (optional)" htmlFor="description" hint={`A short line on what it's for. Up to ${MAX_DESCRIPTION_LENGTH} characters.`}>
+                <textarea id="description" name="description" maxLength={MAX_DESCRIPTION_LENGTH} defaultValue={defaults?.description ?? undefined} className={textareaClass} />
             </Field>
         </>
     );

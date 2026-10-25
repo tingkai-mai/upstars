@@ -237,11 +237,14 @@ export const checkInTest = pgTable(
     (table) => [primaryKey({ columns: [table.checkInId, table.testId] }), index("check_in_test_test_id_idx").on(table.testId)],
 );
 
-/** A link to an external Upstars resource (guide, material, form). Managed by admins, visible to everyone. */
+/** A link to an external Upstars resource (guide, material, form). Managed by admins, visible to everyone. position orders the list. */
 export const resource = pgTable("resource", {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
     url: text("url").notNull(),
+    // Optional one-liner shown under the name
+    description: text("description"),
+    position: integer("position").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

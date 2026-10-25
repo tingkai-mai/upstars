@@ -10,7 +10,7 @@ const MODULES: Module[] = [
     { title: "Volunteer management", description: "Manage tutors, students and admins", href: "/volunteers" },
     { title: "Syllabus management", description: "Plan chapters, concepts and worksheets", href: "/syllabus" },
     { title: "Goal tracking", description: "Student goals and syllabus progress", href: "/goals" },
-    { title: "Upstars resources", description: "Guides and materials" },
+    { title: "Upstars resources", description: "Guides and materials", href: "/resources" },
 ];
 
 const tileClass = "flex min-h-24 flex-col justify-center gap-1 rounded-2xl border p-5 text-left";

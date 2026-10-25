@@ -71,6 +71,20 @@
       "when": 1792934127017,
       "tag": "0009_one_tutor_per_student",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792934762624,
+      "tag": "0010_resources",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792935018156,
+      "tag": "0011_resource_position",
+      "breakpoints": true
     }
   ]
 }

@@ -9,7 +9,7 @@ import { addButtonClass, inlineEditButtonClass, secondaryButtonClass } from "@/c
 import { getSubjectPlan, type Chapter, type SubjectPlan, type Week } from "./queries";
 import * as actions from "./actions";
 import { ChapterFields, ConceptFields, WeekFields } from "./fields";
-import { ConceptMoveButtons } from "./concept-move-buttons";
+import { MoveButtons } from "@/components/move-buttons";
 import { resolveSelection } from "./selection";
 import { SyllabusHeader } from "./syllabus-header";
 import { Accordion, EmptyState, formatWeeks } from "./ui";
@@ -212,7 +212,7 @@ function WeekRows({ week, editing, chapterOptions }: { week: Week; editing: bool
                         <div className="flex items-start gap-2">
                             <span className="min-w-0 flex-1">{concept.name}</span>
                             {editing && week.concepts.length > 1 && (
-                                <ConceptMoveButtons conceptId={concept.id} name={concept.name} isFirst={index === 0} isLast={index === week.concepts.length - 1} />
+                                <MoveButtons action={actions.moveConcept.bind(null, concept.id)} name={concept.name} isFirst={index === 0} isLast={index === week.concepts.length - 1} />
                             )}
                             {editing && (
                                 <FormDialog

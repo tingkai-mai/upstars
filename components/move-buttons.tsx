@@ -1,19 +1,25 @@
 "use client";
 import { useTransition } from "react";
-import { moveConcept } from "./actions";
 
 const buttonClass =
     "inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:pointer-events-none disabled:opacity-30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50";
 
-type Props = { conceptId: string; name: string; isFirst: boolean; isLast: boolean };
+type Props = {
+    /** A Server Action bound to the item, e.g. moveConcept.bind(null, id) */
+    action: (direction: "up" | "down") => Promise<{ error?: string }>;
+    name: string;
+    isFirst: boolean;
+    isLast: boolean;
+};
 
-export function ConceptMoveButtons({ conceptId, name, isFirst, isLast }: Props) {
+/** Up and down arrows for reordering an item in a list. */
+export function MoveButtons({ action, name, isFirst, isLast }: Props) {
     const [pending, startTransition] = useTransition();
 
     function move(direction: "up" | "down") {
         if (pending) return;
         startTransition(async () => {
-            const result = await moveConcept(conceptId, direction);
+            const result = await action(direction);
             if (result.error) alert(result.error);
         });
     }
