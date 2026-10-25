@@ -32,7 +32,7 @@ See your main tutor, your goals and the remarks from your past lessons.
 
 ## Syllabus management
 
-The plan for each subject, week by week: chapters, concepts, worksheets and tests. Admins keep it up to date.
+The plan for each subject, week by week: chapters, concepts, worksheets and tests (e.g Capstone checks, monthly checks). Admins keep it up to date.
 
 ## Goal tracking
 
