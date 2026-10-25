@@ -9,7 +9,7 @@ export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL,
     trustedOrigins: [
         "http://localhost:3000",
-        "https://https://upstars-3xyj7y32n-ferusels-projects.vercel.app",
+        "https://upstars-one.vercel.app",
         "https://*.vercel.app",          // preview deploys (optional)
     ],
     database: drizzleAdapter(db, { provider: "pg" }),
