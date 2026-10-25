@@ -1,8 +1,9 @@
 // Seeds the syllabus tables from seed_data/syllabus/*.csv. Safe to re-run:
 // - a subject's chapters, weeks and concepts are only created when the subject is new
 // - worksheets and tests are added when no item of that name exists yet; existing ones are never changed
-// Usage: npm run db:seed:syllabus
+// Usage: npm run db:seed:syllabus (also used by scripts/seed.mjs, which wipes everything first)
 import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import pg from "pg";
 
 const DIR = new URL("../seed_data/syllabus/", import.meta.url);
@@ -153,11 +154,12 @@ async function syncTests(subjectId, source) {
     return added;
 }
 
-const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
-await client.connect();
+/** The open connection the helpers above use; set by seedSyllabus. */
+let client;
 
-try {
-    await client.query("BEGIN");
+/** Seeds the syllabus using an open pg client, inside the caller's transaction. */
+export async function seedSyllabus(pgClient) {
+    client = pgClient;
     for (const source of subjects) {
         const level = source.level.toUpperCase();
         const name = titleCase(source.subject);
@@ -176,10 +178,20 @@ try {
         const tests = await syncTests(subjectId, source);
         console.log(`  added ${worksheets} worksheets, ${tests} tests`);
     }
-    await client.query("COMMIT");
-} catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-} finally {
-    await client.end();
+}
+
+// Run directly rather than imported
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+    const connection = new pg.Client({ connectionString: process.env.DATABASE_URL });
+    await connection.connect();
+    try {
+        await connection.query("BEGIN");
+        await seedSyllabus(connection);
+        await connection.query("COMMIT");
+    } catch (error) {
+        await connection.query("ROLLBACK");
+        throw error;
+    } finally {
+        await connection.end();
+    }
 }

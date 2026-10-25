@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed:syllabus": "node --env-file=.env.local scripts/seed-syllabus.mjs"
+    "db:seed:syllabus": "node --env-file=.env.local scripts/seed-syllabus.mjs",
+    "db:reset": "node --env-file=.env.local scripts/seed.mjs"
   },
   "dependencies": {
     "better-auth": "^1.7.12",
