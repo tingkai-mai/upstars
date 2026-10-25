@@ -1,0 +1,226 @@
+worksheet_name,concept_id,concept,duration_min
+WholeNumberWS(Wk 1),1,"Spell (1 to 20, 30, 40, 50, 60, 70, 80, 90, hundred, thousand, million)",7.14
+WholeNumberWS(Wk 1),2,Write in words,7.14
+WholeNumberWS(Wk 1),3,Write in numerals,7.14
+WholeNumberWS(Wk 1),4,Number notation and place values,7.14
+WholeNumberWS(Wk 1),5,Complete multiplication table of 1 to 12,7.14
+WholeNumberWS(Wk 1),6,Even and Odd numbers,7.14
+WholeNumberWS(Wk 1),7,Arrange numbers,7.14
+WholeNumberWS(Wk 2),8,Complete multiplication table of 1 to 12,7.14
+WholeNumberWS(Wk 2),9,"Multiplying by tens, hundreds and thousands",7.14
+WholeNumberWS(Wk 2),10,"Dividing by tens, hundreds and thousands",7.14
+WholeNumberWS(Wk 2),11,Multiplication and Division (quotient and remainder),7.14
+WholeNumberWS(Wk 2),12,"Rounding off to the nearest 10, 100 and 1000",7.14
+WholeNumberWS(Wk 2),13,Order of operations,7.14
+WholeNumberWS(Wk 2),14,Factors and multiples,7.14
+WholeNumberWS(Wk 3),15,More than/less than (external unchanged Type 1),16.67
+WholeNumberWS(Wk 3),16,More than/less than (external unchanged Type 2),16.67
+WholeNumberWS(Wk 3),17,More than/less than (external unchanged Type 3),16.67
+WholeNumberWS(Wk 4),18,Equal stage Type 1 (Beginning),16.67
+WholeNumberWS(Wk 4),19,Equal stage Type 2 (End),16.67
+WholeNumberWS(Wk 4),20,Equal stage (Beginning/End),16.67
+WholeNumberWS(Wk 5),21,Repeated Identity (Type 1),12.5
+WholeNumberWS(Wk 5),22,Repeated Identity (Type 2),12.5
+WholeNumberWS(Wk 5),23,Repeated Identity (Type 3),12.5
+WholeNumberWS(Wk 5),24,Number of units and value of units,12.5
+MoneyDecimalWS(Wk 6),25,Money,7.5
+MoneyDecimalWS(Wk 6),26,Decimal place value,7.5
+MoneyDecimalWS(Wk 6),27,Comparing and Ordering decimals,7.5
+MoneyDecimalWS(Wk 6),28,"Multiplying by 10, 100 and 1000",7.5
+MoneyDecimalWS(Wk 6),29,"Dividing by 10, 100 and 1000",7.5
+MoneyDecimalWS(Wk 6),30,"Rounding off to the nearest whole number, 1 decimal and 2 decimal places",7.5
+MoneyDecimalWS(Wk 6),31,"Addition, subtraction, multiplication",7.5
+MoneyDecimalWS(Wk 6),32,Dividing a whole number by a whole number with quotient as a decimal,7.5
+MeasurementWS(Wk 7),33,"Measurement: kilometres, metres and centimetres",10.0
+MeasurementWS(Wk 7),34,Measurement: kilograms and grams,10.0
+MeasurementWS(Wk 7),35,Measurement: litres and millilitres,10.0
+FractionWS(Wk 8),36,Fraction of a Whole,4.17
+FractionWS(Wk 8),37,Fraction in words,4.17
+FractionWS(Wk 8),38,Proper Fractions,4.17
+FractionWS(Wk 8),39,Improper Fractions,4.17
+FractionWS(Wk 8),40,Mixed Numbers,4.17
+FractionWS(Wk 8),41,Convert improper fractions into mixed number,4.17
+FractionWS(Wk 8),42,Convert mixed number into improper fractions,4.17
+FractionWS(Wk 8),43,Equivalent Fractions,4.17
+FractionWS(Wk 8),44,Comparing and Ordering Fractions,4.17
+FractionWS(Wk 8),45,Adding and subtracting like fractions,4.17
+FractionWS(Wk 8),46,Adding and subtracting unlike fractions,4.17
+FractionWS(Wk 8),47,Adding and subtracting mixed numbers,4.17
+FractionWS(Wk 9),48,"Convert denominator to tenths, hundredths and thousandths",6.0
+FractionWS(Wk 9),49,Use long division,6.0
+FractionWS(Wk 9),50,Convert Decimal to Fractions,6.0
+FractionWS(Wk 9),51,Product of two Proper Fractions,6.0
+FractionWS(Wk 9),52,Product of a Fraction and a Whole Number,6.0
+FractionWS(Wk 9),53,Product of Mixed Number and a Whole Number,6.0
+FractionWS(Wk 9),54,Product of an Improper Fraction and a Proper Fraction,6.0
+FractionWS(Wk 9),55,Product of Mixed Number and an Improper Fraction,6.0
+FractionWS(Wk 9),56,Dividing a whole number/proper fraction by a proper fraction,6.0
+FractionWS(Wk 9),57,Dividing a proper fraction by a whole number,6.0
+FractionWS(Wk 10),58,"Understand the word ""of""",10.0
+FractionWS(Wk 10),59,Draw fraction model,10.0
+FractionWS(Wk 10),60,Addition and subtraction model,10.0
+FractionWS(Wk 10),61,"""remaining"" model",10.0
+FractionWS(Wk 10),62,"""as many as"" model",10.0
+FractionWS(Wk 11)-Foundation,63,Part-whole relationship (Type 1),16.67
+FractionWS(Wk 11)-Foundation,64,Part-whole relationship (Type 2),16.67
+FractionWS(Wk 11)-Foundation,65,Part-whole relationship (Type 3),16.67
+FractionWS(Wk 11)-Standard,63,Part-whole relationship (Type 1),16.67
+FractionWS(Wk 11)-Standard,64,Part-whole relationship (Type 2),16.67
+FractionWS(Wk 11)-Standard,65,Part-whole relationship (Type 3),16.67
+MeasurementWS(Wk 13)-Foundation,71,"2D and 3D shapes (rectangle, square, triangle, circle, half circle, quarter circle, rhombus, kite, cube, cuboid, cone, cylinder, sphere)",15.0
+MeasurementWS(Wk 13)-Foundation,72,"Area and perimeter of square, rectangle",15.0
+MeasurementWS(Wk 13)-Standard,71,"2D and 3D shapes (rectangle, square, triangle, circle, half circle, quarter circle, rhombus, kite, cube, cuboid, cone, cylinder, sphere)",15.0
+MeasurementWS(Wk 13)-Standard,72,"Area and perimeter of square, rectangle",15.0
+MeasurementWS(Wk 14),73,Area and perimeter of triangle,7.5
+MeasurementWS(Wk 14),74,"Volume of cube, cuboid",7.5
+MeasurementWS(Wk 14),75,Relationship between ℓ (or ml) and cm³,7.5
+MeasurementWS(Wk 14),76,Volume of liquid in a rectangular tank,7.5
+MeasurementWS(Wk 15),77,"Concepts of right angles, angles greater than/smaller than a right angle",15.0
+MeasurementWS(Wk 15),78,"Property of angles of square, rectangle, triangle, rhombus, kite, parallelogram, trapezium",15.0
+PercentageWS(Wk 16),79,"Conversion percentage, fraction, decimal",30.0
+PercentageWS(Wk 17),80,"Interest, discount, percentage increase and decrease",30.0
+AverageWS(Wk 18)-Foundation,81,Average concepts,6.0
+AverageWS(Wk 18)-Foundation,82,Calculate total amount from average,6.0
+AverageWS(Wk 18)-Foundation,83,Find average with one unknown,6.0
+AverageWS(Wk 18)-Foundation,84,Find average with comparison,6.0
+AverageWS(Wk 18)-Foundation,85,Find average with unknown,6.0
+AverageWS(Wk 18)-Standard,81,Average concepts,6.0
+AverageWS(Wk 18)-Standard,82,Calculate total amount from average,6.0
+AverageWS(Wk 18)-Standard,83,Find average with one unknown,6.0
+AverageWS(Wk 18)-Standard,84,Find average with comparison,6.0
+AverageWS(Wk 18)-Standard,85,Find average with unknown,6.0
+DataAnalysisWS(Wk 19)-Foundation,86,Line Graph,15.0
+DataAnalysisWS(Wk 19)-Foundation,87,Pie Chart,15.0
+DataAnalysisWS(Wk 19)-Standard,86,Line Graph,15.0
+DataAnalysisWS(Wk 19)-Standard,87,Pie Chart,15.0
+RateWS(Wk 20)-Foundation,88,Rate concepts,30.0
+RateWS(Wk 20)-Standard,88,Rate concepts,30.0
+RatioWS(Wk 21),89,What is Ratio?,3.33
+RatioWS(Wk 21),90,Is Ratio and Fraction the same?,3.33
+RatioWS(Wk 21),91,Equivalent ratios,3.33
+RatioWS(Wk 21),92,Ratio in its simplest form,3.33
+RatioWS(Wk 21),93,Comparing 3 ratios,3.33
+RatioWS(Wk 21),94,"Ratios, Fractions and Total",3.33
+RatioWS(Wk 22),95,External Unchanged,13.33
+RatioWS(Wk 22),96,Unchanged Total,13.33
+RatioWS(Wk 22),97,Constant Difference,13.33
+RatioWS(Wk 23),98,"Circle, semicircle, quadrant",8.33
+RatioWS(Wk 23),99,Key parts of circle,8.33
+RatioWS(Wk 23),100,Perimeter of a circle (Circumference),8.33
+RatioWS(Wk 23),101,Perimeter of semicircle,8.33
+RatioWS(Wk 23),102,Perimeter of quadrant,8.33
+RatioWS(Wk 23),103,"Area of a circle, semicircle, quadrant",8.33
+AlgebraWS(Wk 24),104,What is algebra?,16.67
+AlgebraWS(Wk 24),105,What you need to know in algebra,16.67
+AlgebraWS(Wk 24),106,Solving simple algebra,16.67
+Extra Practice - Standard Word Problem,15,More than/less than (external unchanged Type 1),4.0
+Extra Practice - Standard Word Problem,16,More than/less than (external unchanged Type 2),4.0
+Extra Practice - Standard Word Problem,17,More than/less than (external unchanged Type 3),4.0
+Extra Practice - Standard Word Problem,18,Equal stage Type 1 (Beginning),4.0
+Extra Practice - Standard Word Problem,19,Equal stage Type 2 (End),4.0
+Extra Practice - Standard Word Problem,20,Equal stage (Beginning/End),4.0
+Extra Practice - Standard Word Problem,21,Repeated Identity (Type 1),4.0
+Extra Practice - Standard Word Problem,22,Repeated Identity (Type 2),4.0
+Extra Practice - Standard Word Problem,23,Repeated Identity (Type 3),4.0
+Extra Practice - Standard Word Problem,24,Number of units and value of units,4.0
+Extra Practice - Foundation Word Problem,15,More than/less than (external unchanged Type 1),4.0
+Extra Practice - Foundation Word Problem,16,More than/less than (external unchanged Type 2),4.0
+Extra Practice - Foundation Word Problem,17,More than/less than (external unchanged Type 3),4.0
+Extra Practice - Foundation Word Problem,18,Equal stage Type 1 (Beginning),4.0
+Extra Practice - Foundation Word Problem,19,Equal stage Type 2 (End),4.0
+Extra Practice - Foundation Word Problem,20,Equal stage (Beginning/End),4.0
+Extra Practice - Foundation Word Problem,21,Repeated Identity (Type 1),4.0
+Extra Practice - Foundation Word Problem,22,Repeated Identity (Type 2),4.0
+Extra Practice - Foundation Word Problem,23,Repeated Identity (Type 3),4.0
+Extra Practice - Foundation Word Problem,24,Number of units and value of units,4.0
+Extra Practice Money and Decimal,25,Money,7.5
+Extra Practice Money and Decimal,26,Decimal place value,7.5
+Extra Practice Money and Decimal,27,Comparing and Ordering decimals,7.5
+Extra Practice Money and Decimal,28,"Multiplying by 10, 100 and 1000",7.5
+Extra Practice Money and Decimal,29,"Dividing by 10, 100 and 1000",7.5
+Extra Practice Money and Decimal,30,"Rounding off to the nearest whole number, 1 decimal and 2 decimal places",7.5
+Extra Practice Money and Decimal,31,"Addition, subtraction, multiplication",7.5
+Extra Practice Money and Decimal,32,Dividing a whole number by a whole number with quotient as a decimal,7.5
+Fraction Extra Practice 1,36,Fraction of a Whole,0.74
+Fraction Extra Practice 1,37,Fraction in words,0.74
+Fraction Extra Practice 1,38,Proper Fractions,0.74
+Fraction Extra Practice 1,39,Improper Fractions,0.74
+Fraction Extra Practice 1,40,Mixed Numbers,0.74
+Fraction Extra Practice 1,41,Convert improper fractions into mixed number,0.74
+Fraction Extra Practice 1,42,Convert mixed number into improper fractions,0.74
+Fraction Extra Practice 1,43,Equivalent Fractions,0.74
+Fraction Extra Practice 1,44,Comparing and Ordering Fractions,0.74
+Fraction Extra Practice 1,45,Adding and subtracting like fractions,0.74
+Fraction Extra Practice 1,46,Adding and subtracting unlike fractions,0.74
+Fraction Extra Practice 1,47,Adding and subtracting mixed numbers,0.74
+Fraction Extra Practice 1,48,"Convert denominator to tenths, hundredths and thousandths",0.74
+Fraction Extra Practice 1,49,Use long division,0.74
+Fraction Extra Practice 1,50,Convert Decimal to Fractions,0.74
+Fraction Extra Practice 1,51,Product of two Proper Fractions,0.74
+Fraction Extra Practice 1,52,Product of a Fraction and a Whole Number,0.74
+Fraction Extra Practice 1,53,Product of Mixed Number and a Whole Number,0.74
+Fraction Extra Practice 1,54,Product of an Improper Fraction and a Proper Fraction,0.74
+Fraction Extra Practice 1,55,Product of Mixed Number and an Improper Fraction,0.74
+Fraction Extra Practice 1,56,Dividing a whole number/proper fraction by a proper fraction,0.74
+Fraction Extra Practice 1,57,Dividing a proper fraction by a whole number,0.74
+Fraction Extra Practice 1,58,"Understand the word ""of""",0.74
+Fraction Extra Practice 1,59,Draw fraction model,0.74
+Fraction Extra Practice 1,60,Addition and subtraction model,0.74
+Fraction Extra Practice 1,61,"""remaining"" model",0.74
+Fraction Extra Practice 1,62,"""as many as"" model",0.74
+Fraction Extra Practice 2 (Foundation),63,Part-whole relationship (Type 1),5.0
+Fraction Extra Practice 2 (Foundation),64,Part-whole relationship (Type 2),5.0
+Fraction Extra Practice 2 (Foundation),65,Part-whole relationship (Type 3),5.0
+Fraction Extra Practice 2 (Foundation),66,Equal Fractions,5.0
+Fraction Extra Practice 2 (Foundation),67,Repeated Identity Fractions,5.0
+Fraction Extra Practice 2 (Foundation),68,External Unchanged Fractions,5.0
+Fraction Extra Practice 2 (Foundation),69,Constant Difference Fractions,5.0
+Fraction Extra Practice 2 (Foundation),70,Number of Units and Value of Units Fractions,5.0
+Fraction Extra Practice 2 (Standard),63,Part-whole relationship (Type 1),5.0
+Fraction Extra Practice 2 (Standard),64,Part-whole relationship (Type 2),5.0
+Fraction Extra Practice 2 (Standard),65,Part-whole relationship (Type 3),5.0
+Fraction Extra Practice 2 (Standard),66,Equal Fractions,5.0
+Fraction Extra Practice 2 (Standard),67,Repeated Identity Fractions,5.0
+Fraction Extra Practice 2 (Standard),68,External Unchanged Fractions,5.0
+Fraction Extra Practice 2 (Standard),69,Constant Difference Fractions,5.0
+Fraction Extra Practice 2 (Standard),70,Number of Units and Value of Units Fractions,5.0
+Measurement Extra Practice 1 (Foundation),71,"2D and 3D shapes (rectangle, square, triangle, circle, half circle, quarter circle, rhombus, kite, cube, cuboid, cone, cylinder, sphere)",5.0
+Measurement Extra Practice 1 (Foundation),72,"Area and perimeter of square, rectangle",5.0
+Measurement Extra Practice 1 (Foundation),73,Area and perimeter of triangle,5.0
+Measurement Extra Practice 1 (Foundation),74,"Volume of cube, cuboid",5.0
+Measurement Extra Practice 1 (Foundation),75,Relationship between ℓ (or ml) and cm³,5.0
+Measurement Extra Practice 1 (Foundation),76,Volume of liquid in a rectangular tank,5.0
+Measurement Extra Practice 1 (Standard),71,"2D and 3D shapes (rectangle, square, triangle, circle, half circle, quarter circle, rhombus, kite, cube, cuboid, cone, cylinder, sphere)",5.0
+Measurement Extra Practice 1 (Standard),72,"Area and perimeter of square, rectangle",5.0
+Measurement Extra Practice 1 (Standard),73,Area and perimeter of triangle,5.0
+Measurement Extra Practice 1 (Standard),74,"Volume of cube, cuboid",5.0
+Measurement Extra Practice 1 (Standard),75,Relationship between ℓ (or ml) and cm³,5.0
+Measurement Extra Practice 1 (Standard),76,Volume of liquid in a rectangular tank,5.0
+Measurement Extra Practice 2 (Foundation/Standard),71,"2D and 3D shapes (rectangle, square, triangle, circle, half circle, quarter circle, rhombus, kite, cube, cuboid, cone, cylinder, sphere)",5.0
+Measurement Extra Practice 2 (Foundation/Standard),72,"Area and perimeter of square, rectangle",5.0
+Measurement Extra Practice 2 (Foundation/Standard),73,Area and perimeter of triangle,5.0
+Measurement Extra Practice 2 (Foundation/Standard),74,"Volume of cube, cuboid",5.0
+Measurement Extra Practice 2 (Foundation/Standard),75,Relationship between ℓ (or ml) and cm³,5.0
+Measurement Extra Practice 2 (Foundation/Standard),76,Volume of liquid in a rectangular tank,5.0
+Measurement Extra Practice 1 (Standard) - Wk 15,77,"Concepts of right angles, angles greater than/smaller than a right angle",25.0
+Measurement Extra Practice 1 (Standard) - Wk 15,78,"Property of angles of square, rectangle, triangle, rhombus, kite, parallelogram, trapezium",25.0
+PercentageExtraPractice 1 - Foundation,79,"Conversion percentage, fraction, decimal",10.0
+PercentageExtraPractice 1 - Foundation,80,"Interest, discount, percentage increase and decrease",10.0
+PercentageExtraPractice 1 - Standard,79,"Conversion percentage, fraction, decimal",10.0
+PercentageExtraPractice 1 - Standard,80,"Interest, discount, percentage increase and decrease",10.0
+PercentageExtraPractice 2 - Foundation,79,"Conversion percentage, fraction, decimal",10.0
+PercentageExtraPractice 2 - Foundation,80,"Interest, discount, percentage increase and decrease",10.0
+PercentageExtraPractice 2 - Standard,79,"Conversion percentage, fraction, decimal",10.0
+PercentageExtraPractice 2 - Standard,80,"Interest, discount, percentage increase and decrease",10.0
+Ratio Extra Practice,89,What is Ratio?,5.56
+Ratio Extra Practice,90,Is Ratio and Fraction the same?,5.56
+Ratio Extra Practice,91,Equivalent ratios,5.56
+Ratio Extra Practice,92,Ratio in its simplest form,5.56
+Ratio Extra Practice,93,Comparing 3 ratios,5.56
+Ratio Extra Practice,94,"Ratios, Fractions and Total",5.56
+Ratio Extra Practice,95,External Unchanged,5.56
+Ratio Extra Practice,96,Unchanged Total,5.56
+Ratio Extra Practice,97,Constant Difference,5.56
+Algebra Extra Practice,104,What is algebra?,
+Algebra Extra Practice,105,What you need to know in algebra,
+Algebra Extra Practice,106,Solving simple algebra,

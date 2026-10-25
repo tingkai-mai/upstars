@@ -7,7 +7,7 @@ type Module = { title: string; description: string; href?: string };
 
 const MODULES: Module[] = [
     { title: "Volunteer management", description: "Manage tutors, students and admins", href: "/volunteers" },
-    { title: "Syllabus management", description: "Organise subjects and topics" },
+    { title: "Syllabus management", description: "Plan chapters, concepts and worksheets", href: "/syllabus" },
     { title: "Goal tracking", description: "Set and follow student goals" },
     { title: "Upstars resources", description: "Guides and materials" },
 ];

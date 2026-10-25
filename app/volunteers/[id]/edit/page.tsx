@@ -5,7 +5,7 @@ import { getAdminUser } from "@/lib/session";
 import { PageHeader } from "@/components/page-header";
 import { AdminOnly } from "../../admin-only";
 import { UserForm } from "../../user-form";
-import { DeleteUserButton } from "../../delete-user-button";
+import { DeleteButton } from "@/components/delete-button";
 import { deleteUser, updateUser } from "../../actions";
 import { getUser } from "../../queries";
 
@@ -38,7 +38,7 @@ async function EditUser({ params }: Pick<Props, "params">) {
             {!isSelf && (
                 <section className="mt-4 flex flex-col gap-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
                     <h2 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Danger zone</h2>
-                    <DeleteUserButton action={deleteUser.bind(null, id)} name={member.name} />
+                    <DeleteButton action={deleteUser.bind(null, id)} label="Delete user" confirm={`Delete ${member.name}? Their pairings will be removed too. This can't be undone.`} />
                 </section>
             )}
         </>

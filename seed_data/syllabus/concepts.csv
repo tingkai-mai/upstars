@@ -1,0 +1,107 @@
+concept_id,week,concept
+1,1,"Spell (1 to 20, 30, 40, 50, 60, 70, 80, 90, hundred, thousand, million)"
+2,1,Write in words
+3,1,Write in numerals
+4,1,Number notation and place values
+5,1,Complete multiplication table of 1 to 12
+6,1,Even and Odd numbers
+7,1,Arrange numbers
+8,2,Complete multiplication table of 1 to 12
+9,2,"Multiplying by tens, hundreds and thousands"
+10,2,"Dividing by tens, hundreds and thousands"
+11,2,Multiplication and Division (quotient and remainder)
+12,2,"Rounding off to the nearest 10, 100 and 1000"
+13,2,Order of operations
+14,2,Factors and multiples
+15,3,More than/less than (external unchanged Type 1)
+16,3,More than/less than (external unchanged Type 2)
+17,3,More than/less than (external unchanged Type 3)
+18,4,Equal stage Type 1 (Beginning)
+19,4,Equal stage Type 2 (End)
+20,4,Equal stage (Beginning/End)
+21,5,Repeated Identity (Type 1)
+22,5,Repeated Identity (Type 2)
+23,5,Repeated Identity (Type 3)
+24,5,Number of units and value of units
+25,6,Money
+26,6,Decimal place value
+27,6,Comparing and Ordering decimals
+28,6,"Multiplying by 10, 100 and 1000"
+29,6,"Dividing by 10, 100 and 1000"
+30,6,"Rounding off to the nearest whole number, 1 decimal and 2 decimal places"
+31,6,"Addition, subtraction, multiplication"
+32,6,Dividing a whole number by a whole number with quotient as a decimal
+33,7,"Measurement: kilometres, metres and centimetres"
+34,7,Measurement: kilograms and grams
+35,7,Measurement: litres and millilitres
+36,8,Fraction of a Whole
+37,8,Fraction in words
+38,8,Proper Fractions
+39,8,Improper Fractions
+40,8,Mixed Numbers
+41,8,Convert improper fractions into mixed number
+42,8,Convert mixed number into improper fractions
+43,8,Equivalent Fractions
+44,8,Comparing and Ordering Fractions
+45,8,Adding and subtracting like fractions
+46,8,Adding and subtracting unlike fractions
+47,8,Adding and subtracting mixed numbers
+48,9,"Convert denominator to tenths, hundredths and thousandths"
+49,9,Use long division
+50,9,Convert Decimal to Fractions
+51,9,Product of two Proper Fractions
+52,9,Product of a Fraction and a Whole Number
+53,9,Product of Mixed Number and a Whole Number
+54,9,Product of an Improper Fraction and a Proper Fraction
+55,9,Product of Mixed Number and an Improper Fraction
+56,9,Dividing a whole number/proper fraction by a proper fraction
+57,9,Dividing a proper fraction by a whole number
+58,10,"Understand the word ""of"""
+59,10,Draw fraction model
+60,10,Addition and subtraction model
+61,10,"""remaining"" model"
+62,10,"""as many as"" model"
+63,11,Part-whole relationship (Type 1)
+64,11,Part-whole relationship (Type 2)
+65,11,Part-whole relationship (Type 3)
+66,12,Equal Fractions
+67,12,Repeated Identity Fractions
+68,12,External Unchanged Fractions
+69,12,Constant Difference Fractions
+70,12,Number of Units and Value of Units Fractions
+71,13,"2D and 3D shapes (rectangle, square, triangle, circle, half circle, quarter circle, rhombus, kite, cube, cuboid, cone, cylinder, sphere)"
+72,13,"Area and perimeter of square, rectangle"
+73,14,Area and perimeter of triangle
+74,14,"Volume of cube, cuboid"
+75,14,Relationship between ℓ (or ml) and cm³
+76,14,Volume of liquid in a rectangular tank
+77,15,"Concepts of right angles, angles greater than/smaller than a right angle"
+78,15,"Property of angles of square, rectangle, triangle, rhombus, kite, parallelogram, trapezium"
+79,16,"Conversion percentage, fraction, decimal"
+80,17,"Interest, discount, percentage increase and decrease"
+81,18,Average concepts
+82,18,Calculate total amount from average
+83,18,Find average with one unknown
+84,18,Find average with comparison
+85,18,Find average with unknown
+86,19,Line Graph
+87,19,Pie Chart
+88,20,Rate concepts
+89,21,What is Ratio?
+90,21,Is Ratio and Fraction the same?
+91,21,Equivalent ratios
+92,21,Ratio in its simplest form
+93,21,Comparing 3 ratios
+94,21,"Ratios, Fractions and Total"
+95,22,External Unchanged
+96,22,Unchanged Total
+97,22,Constant Difference
+98,23,"Circle, semicircle, quadrant"
+99,23,Key parts of circle
+100,23,Perimeter of a circle (Circumference)
+101,23,Perimeter of semicircle
+102,23,Perimeter of quadrant
+103,23,"Area of a circle, semicircle, quadrant"
+104,24,What is algebra?
+105,24,What you need to know in algebra
+106,24,Solving simple algebra

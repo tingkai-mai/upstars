@@ -7,18 +7,13 @@ import { APIError } from "better-auth/api";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { pairing, user } from "@/db/schema";
-import { getSession, isAdmin } from "@/lib/session";
+import { getAdminSession } from "@/lib/session";
 import { isUserRole, MIN_PASSWORD_LENGTH, type UserRole } from "@/lib/users";
 
 export type UserFormValues = { name: string; email: string; role: UserRole };
 export type ActionState = { error?: string };
 
 const NOT_ALLOWED = { error: "Only admins can manage volunteers." };
-
-async function getAdminSession() {
-    const session = await getSession();
-    return session && isAdmin(session.user) ? session : null;
-}
 
 function parseUserForm(formData: FormData): UserFormValues | null {
     const name = String(formData.get("name") ?? "").trim();

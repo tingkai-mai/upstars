@@ -22,3 +22,9 @@ export async function getAdminUser() {
     const user = await requireUser();
     return isAdmin(user) ? user : null;
 }
+
+/** For Server Actions: the session if the caller is an admin, otherwise null. */
+export async function getAdminSession() {
+    const session = await getSession();
+    return session && isAdmin(session.user) ? session : null;
+}

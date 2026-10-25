@@ -15,6 +15,34 @@
       "when": 1792911297318,
       "tag": "0001_overjoyed_joshua_kane",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792913906041,
+      "tag": "0002_burly_hellcat",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792914569795,
+      "tag": "0003_known_marvel_apes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792916592332,
+      "tag": "0004_watery_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792917372521,
+      "tag": "0005_uneven_grim_reaper",
+      "breakpoints": true
     }
   ]
 }

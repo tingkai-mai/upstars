@@ -16,6 +16,15 @@ export const primaryButtonClass =
 export const dangerButtonClass =
     "inline-flex h-12 w-full items-center justify-center rounded-xl border border-red-200 px-5 text-base font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/50";
 
+export const secondaryButtonClass =
+    "inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-zinc-300 px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900";
+
+export const addButtonClass =
+    "flex h-11 w-full items-center justify-center rounded-xl border border-dashed border-zinc-300 text-sm font-medium text-zinc-600 transition hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-50";
+
+export const inlineEditButtonClass =
+    "inline-flex h-9 shrink-0 items-center rounded-lg px-2.5 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50";
+
 export function Field({ label, htmlFor, hint, children }: { label: string; htmlFor: string; hint?: string; children: ReactNode }) {
     return (
         <div className="flex flex-col gap-2">
