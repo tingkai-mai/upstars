@@ -30,6 +30,8 @@ export default function Home({ searchParams }: Props) {
 async function Dashboard({ searchParams }: Pick<Props, "searchParams">) {
     const user = await requireUser();
     const canCheckIn = user.role === "tutor" || user.role === "admin";
+    // Students only see their own profile in volunteer management
+    const modules = user.role === "student" ? MODULES.map((m) => (m.href === "/volunteers" ? { title: "My profile", description: "Your tutor, goals and past lessons", href: `/volunteers/${user.id}` } : m)) : MODULES;
 
     return (
         <>
@@ -44,7 +46,7 @@ async function Dashboard({ searchParams }: Pick<Props, "searchParams">) {
             {canCheckIn && <CheckInSection viewer={user} params={await searchParams} />}
 
             <nav aria-label="Modules" className="grid gap-3 sm:grid-cols-2">
-                {MODULES.map((module) => (module.href ? <ModuleLink key={module.title} module={module} href={module.href} /> : <DisabledModule key={module.title} module={module} />))}
+                {modules.map((module) => (module.href ? <ModuleLink key={module.title} module={module} href={module.href} /> : <DisabledModule key={module.title} module={module} />))}
             </nav>
         </>
     );

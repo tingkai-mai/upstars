@@ -120,7 +120,7 @@ export const testChapter = pgTable(
     (table) => [primaryKey({ columns: [table.testId, table.chapterId] }), index("test_chapter_chapter_id_idx").on(table.chapterId)],
 );
 
-/** Matches a tutor with a student. Each tutor–student pair can exist only once. */
+/** Matches a tutor with a student. A student has at most one tutor (their main tutor); a tutor may have several students. */
 export const pairing = pgTable(
     "pairing",
     {
@@ -130,7 +130,7 @@ export const pairing = pgTable(
     },
     (table) => [
         primaryKey({ columns: [table.tutorId, table.studentId] }),
-        index("pairing_student_id_idx").on(table.studentId),
+        unique("pairing_student_unique").on(table.studentId),
         check("pairing_not_self", sql`${table.tutorId} <> ${table.studentId}`),
     ],
 );

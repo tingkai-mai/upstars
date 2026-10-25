@@ -64,6 +64,13 @@
       "when": 1792929199273,
       "tag": "0008_current_level_and_rewards",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792934127017,
+      "tag": "0009_one_tutor_per_student",
+      "breakpoints": true
     }
   ]
 }

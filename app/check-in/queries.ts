@@ -1,7 +1,8 @@
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { asc, count, desc, eq, inArray, max } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import { checkIn, checkInConcept, checkInTest, checkInWorksheet, concept, subject, test, user, week, worksheet } from "@/db/schema";
+import type { UserRole } from "@/lib/users";
 import type { RewardPoints } from "./rewards";
 
 const recorder = alias(user, "recorder");
@@ -73,4 +74,21 @@ export async function listPastCheckIns(studentId: string, limit = 50): Promise<P
         worksheets: namesFor(worksheets, row.id),
         tests: namesFor(tests, row.id),
     }));
+}
+
+export type LessonPartner = { id: string; name: string; role: UserRole; lessons: number; lastLessonDate: string | null };
+
+/**
+ * Who a user has had lessons with, from check-ins, most recent first:
+ * for a student, everyone who checked in with them; for a tutor, every student they checked in with.
+ */
+export async function listLessonPartners(userId: string, side: "student" | "tutor"): Promise<LessonPartner[]> {
+    const [self, partner] = side === "student" ? [checkIn.studentId, checkIn.recordedBy] : [checkIn.recordedBy, checkIn.studentId];
+    return db
+        .select({ id: user.id, name: user.name, role: user.role, lessons: count(), lastLessonDate: max(checkIn.lessonDate) })
+        .from(checkIn)
+        .innerJoin(user, eq(partner, user.id))
+        .where(eq(self, userId))
+        .groupBy(user.id)
+        .orderBy(desc(max(checkIn.lessonDate)));
 }

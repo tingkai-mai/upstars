@@ -76,7 +76,8 @@ export async function updateUser(userId: string, _prev: ActionState, formData: F
     if (existing.role !== values.role) {
         await db.delete(pairing).where(or(eq(pairing.tutorId, userId), eq(pairing.studentId, userId)));
     }
-    redirect(`/volunteers/${userId}`);
+    // Admins have no profile page to return to
+    redirect(values.role === "admin" ? "/volunteers" : `/volunteers/${userId}`);
 }
 
 export async function deleteUser(userId: string): Promise<ActionState> {
@@ -107,8 +108,12 @@ export async function createPairing(_prev: PairingState, formData: FormData): Pr
     const student = people.find((person) => person.id === studentId && person.role === "student");
     if (!tutor || !student) return { error: "That tutor or student no longer exists, or their role has changed. Refresh and try again." };
 
+    // A student has at most one tutor; the unique constraint backs this up against races
+    const [existing] = await db.select({ name: user.name }).from(pairing).innerJoin(user, eq(pairing.tutorId, user.id)).where(eq(pairing.studentId, studentId));
+    if (existing) return { error: `${student.name} is already paired with ${existing.name}. Remove that pairing first.` };
+
     const inserted = await db.insert(pairing).values({ tutorId, studentId }).onConflictDoNothing().returning({ tutorId: pairing.tutorId });
-    if (inserted.length === 0) return { error: `${tutor.name} is already paired with ${student.name}.` };
+    if (inserted.length === 0) return { error: `${student.name} was just paired with another tutor. Refresh and try again.` };
 
     refresh();
     return { success: `Paired ${tutor.name} with ${student.name}.` };

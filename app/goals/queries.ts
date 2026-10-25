@@ -1,6 +1,6 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { concept, conceptCompletion, goal, test, testCompletion, week, worksheet, worksheetCompletion } from "@/db/schema";
+import { concept, conceptCompletion, goal, subject, test, testCompletion, week, worksheet, worksheetCompletion } from "@/db/schema";
 
 export type Goal = { id: string; year: number; month: number; quarter: number; totalMarks: number; targetMarks: number; actualMarks: number | null };
 
@@ -45,6 +45,28 @@ export async function listGoals(studentId: string, subjectId: string): Promise<G
         .from(goal)
         .where(and(eq(goal.studentId, studentId), eq(goal.subjectId, subjectId)))
         .orderBy(desc(goal.year), desc(goal.month));
+    // quarter is a generated column, so it's always present
+    return rows.map((r) => ({ ...r, quarter: r.quarter ?? Math.floor((r.month - 1) / 3) + 1 }));
+}
+
+/** A student's goals across every subject, newest quarter first, for their profile. */
+export async function listStudentGoals(studentId: string) {
+    const rows = await db
+        .select({
+            id: goal.id,
+            subject: subject.name,
+            level: subject.level,
+            year: goal.year,
+            month: goal.month,
+            quarter: goal.quarter,
+            totalMarks: goal.totalMarks,
+            targetMarks: goal.targetMarks,
+            actualMarks: goal.actualMarks,
+        })
+        .from(goal)
+        .innerJoin(subject, eq(goal.subjectId, subject.id))
+        .where(eq(goal.studentId, studentId))
+        .orderBy(desc(goal.year), desc(goal.month), asc(subject.level), asc(subject.name));
     // quarter is a generated column, so it's always present
     return rows.map((r) => ({ ...r, quarter: r.quarter ?? Math.floor((r.month - 1) / 3) + 1 }));
 }

@@ -1,65 +1,43 @@
 "use client";
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { Field, FormError, inputClass, primaryButtonClass, selectClass, selectStyle } from "@/components/form";
+import { Field, FormError, inputClass, selectClass, selectStyle } from "@/components/form";
+import { FormDialog } from "@/components/form-dialog";
 import { createPairing, removePairing, type PairingState } from "../actions";
 import type { Pairing, Person } from "../queries";
-import { submitWithoutReset } from "@/lib/submit-without-reset";
 
-export function AddPairingForm({ tutors, students }: { tutors: Person[]; students: Person[] }) {
-    // Controlled so the choice survives an error and can be cleared after a success
-    const [tutorId, setTutorId] = useState("");
-    const [studentId, setStudentId] = useState("");
-    const [state, dispatch, pending] = useActionState(async (prev: PairingState, formData: FormData) => {
-        const result = await createPairing(prev, formData);
-        if (result.success) {
-            setTutorId("");
-            setStudentId("");
-        }
-        return result;
-    }, {});
-
-    if (tutors.length === 0 || students.length === 0) {
-        return (
-            <p className="rounded-2xl border border-dashed border-zinc-300 p-5 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                You need at least one tutor and one student to create a pairing.{" "}
+/** "New pairing" button and modal, for admins. Only students without a tutor can be chosen. */
+export function NewPairingButton({ tutors, students }: { tutors: Person[]; students: Person[] }) {
+    return (
+        <FormDialog
+            title="New pairing"
+            trigger="New pairing"
+            triggerLabel="New pairing"
+            triggerClassName="inline-flex h-10 shrink-0 items-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            submitLabel="Add pairing"
+            action={createPairing.bind(null, {})}
+        >
+            <PersonSelect label="Tutor" name="tutorId" people={tutors} emptyLabel="No tutors yet" />
+            <PersonSelect label="Student" name="studentId" people={students} emptyLabel="Every student already has a tutor" />
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Each student has one main tutor, so students who already have one aren&apos;t listed.{" "}
                 <Link href="/volunteers/new" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-50">
                     Add a user
                 </Link>
             </p>
-        );
-    }
-
-    return (
-        <section className="flex flex-col gap-4 rounded-2xl border border-zinc-200 p-4 sm:p-5 dark:border-zinc-800">
-            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">New pairing</h2>
-            <form onSubmit={submitWithoutReset(dispatch)} className="flex flex-col gap-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <PersonSelect label="Tutor" name="tutorId" people={tutors} value={tutorId} onChange={setTutorId} />
-                    <PersonSelect label="Student" name="studentId" people={students} value={studentId} onChange={setStudentId} />
-                </div>
-                <FormError message={state.error} />
-                {state.success && (
-                    <p role="status" className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
-                        {state.success}
-                    </p>
-                )}
-                <button type="submit" disabled={pending} className={primaryButtonClass}>
-                    {pending ? "Adding…" : "Add pairing"}
-                </button>
-            </form>
-        </section>
+        </FormDialog>
     );
 }
 
-type PersonSelectProps = { label: string; name: string; people: Person[]; value: string; onChange: (id: string) => void };
+type PersonSelectProps = { label: string; name: string; people: Person[]; emptyLabel: string };
 
-function PersonSelect({ label, name, people, value, onChange }: PersonSelectProps) {
+// Uncontrolled: FormDialog keeps the choice after an error and starts fresh each time it opens
+function PersonSelect({ label, name, people, emptyLabel }: PersonSelectProps) {
     return (
         <Field label={label} htmlFor={name}>
-            <select id={name} name={name} required value={value} onChange={(event) => onChange(event.target.value)} className={selectClass} style={selectStyle}>
+            <select id={name} name={name} required defaultValue="" className={selectClass} style={selectStyle}>
                 <option value="" disabled>
-                    Choose a {label.toLowerCase()}…
+                    {people.length ? `Choose a ${label.toLowerCase()}…` : emptyLabel}
                 </option>
                 {people.map((person) => (
                     <option key={person.id} value={person.id}>
@@ -75,7 +53,7 @@ function matches(person: Person, query: string) {
     return person.name.toLowerCase().includes(query) || person.email.toLowerCase().includes(query);
 }
 
-export function PairingList({ pairings, initialQuery }: { pairings: Pairing[]; initialQuery: string }) {
+export function PairingList({ pairings, initialQuery, canEdit }: { pairings: Pairing[]; initialQuery: string; canEdit: boolean }) {
     const [query, setQuery] = useState(initialQuery);
     const normalized = query.trim().toLowerCase();
     const visible = normalized ? pairings.filter((p) => matches(p.tutor, normalized) || matches(p.student, normalized)) : pairings;
@@ -102,12 +80,12 @@ export function PairingList({ pairings, initialQuery }: { pairings: Pairing[]; i
 
             {visible.length === 0 ? (
                 <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                    {pairings.length === 0 ? "No pairings yet. Add one above." : "No pairings match your filter."}
+                    {pairings.length === 0 ? `No pairings yet.${canEdit ? " Add one with New pairing." : ""}` : "No pairings match your filter."}
                 </p>
             ) : (
                 <ul className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
                     {visible.map((p) => (
-                        <PairingRow key={`${p.tutor.id}:${p.student.id}`} pairing={p} />
+                        <PairingRow key={`${p.tutor.id}:${p.student.id}`} pairing={p} canEdit={canEdit} />
                     ))}
                 </ul>
             )}
@@ -115,7 +93,7 @@ export function PairingList({ pairings, initialQuery }: { pairings: Pairing[]; i
     );
 }
 
-function PairingRow({ pairing }: { pairing: Pairing }) {
+function PairingRow({ pairing, canEdit }: { pairing: Pairing; canEdit: boolean }) {
     const { tutor, student } = pairing;
     const [state, formAction, pending] = useActionState<PairingState>(removePairing.bind(null, tutor.id, student.id), {});
 
@@ -126,20 +104,22 @@ function PairingRow({ pairing }: { pairing: Pairing }) {
                     <PersonCell role="Tutor" person={tutor} />
                     <PersonCell role="Student" person={student} />
                 </dl>
-                <form
-                    action={formAction}
-                    onSubmit={(event) => {
-                        if (!confirm(`Remove the pairing between ${tutor.name} and ${student.name}?`)) event.preventDefault();
-                    }}
-                >
-                    <button
-                        type="submit"
-                        disabled={pending}
-                        className="h-10 shrink-0 rounded-xl px-3 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950/50"
+                {canEdit && (
+                    <form
+                        action={formAction}
+                        onSubmit={(event) => {
+                            if (!confirm(`Remove the pairing between ${tutor.name} and ${student.name}?`)) event.preventDefault();
+                        }}
                     >
-                        {pending ? "Removing…" : "Remove"}
-                    </button>
-                </form>
+                        <button
+                            type="submit"
+                            disabled={pending}
+                            className="h-10 shrink-0 rounded-xl px-3 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950/50"
+                        >
+                            {pending ? "Removing…" : "Remove"}
+                        </button>
+                    </form>
+                )}
             </div>
             <FormError message={state.error} />
         </li>

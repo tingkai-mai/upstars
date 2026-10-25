@@ -33,7 +33,7 @@ async function EditUser({ params }: Pick<Props, "params">) {
 
     return (
         <>
-            <PageHeader title="Edit user" back={{ href: `/volunteers/${id}`, label: member.name }} />
+            <PageHeader title="Edit user" back={member.role === "admin" ? { href: "/volunteers", label: "Users" } : { href: `/volunteers/${id}`, label: member.name }} />
             <UserForm action={updateUser.bind(null, id)} defaults={member} mode="edit" roleLocked={isSelf} />
             {!isSelf && (
                 <section className="mt-4 flex flex-col gap-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
