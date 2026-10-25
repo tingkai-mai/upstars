@@ -88,8 +88,9 @@ function useSubjectAction() {
         setError(undefined);
         startTransition(async () => {
             const result = await work();
-            if (result.error) setError(result.error);
-            else onSuccess();
+            // State updates after an await must be wrapped again to stay in the transition; otherwise they
+            // commit before the refreshed data does and the UI briefly shows stale values
+            startTransition(() => (result.error ? setError(result.error) : onSuccess()));
         });
     }
     return { error, pending, run };

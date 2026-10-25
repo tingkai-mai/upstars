@@ -1,7 +1,5 @@
 "use client";
-import { useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { selectClass, selectStyle } from "@/components/form";
+import { FilterSelect, useUrlFilters } from "@/components/url-filters";
 import { TEST_TYPES, TEST_TYPE_LABELS, type TestType } from "@/lib/tests";
 
 type Props = {
@@ -14,18 +12,8 @@ type Props = {
 };
 
 export function SyllabusFilter({ subjects, levels, level, subjectId, testType }: Props) {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const [pending, startTransition] = useTransition();
+    const { pending, update } = useUrlFilters();
     const levelSubjects = subjects.filter((s) => s.level === level);
-
-    function update(changes: Record<string, string>) {
-        const params = new URLSearchParams(searchParams);
-        for (const [key, value] of Object.entries(changes)) params.set(key, value);
-        params.delete("level");
-        startTransition(() => router.replace(`${pathname}?${params}`, { scroll: false }));
-    }
 
     function selectLevel(nextLevel: string) {
         const first = subjects.find((s) => s.level === nextLevel);
@@ -49,32 +37,6 @@ export function SyllabusFilter({ subjects, levels, level, subjectId, testType }:
                     className="col-span-2 sm:col-span-1"
                 />
             )}
-        </div>
-    );
-}
-
-type FilterSelectProps = {
-    id: string;
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
-    options: { value: string; label: string }[];
-    className?: string;
-};
-
-function FilterSelect({ id, label, value, onChange, options, className = "" }: FilterSelectProps) {
-    return (
-        <div className={`flex flex-col gap-1.5 ${className}`}>
-            <label htmlFor={id} className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                {label}
-            </label>
-            <select id={id} value={value} onChange={(event) => onChange(event.target.value)} className={selectClass} style={selectStyle}>
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
-            </select>
         </div>
     );
 }

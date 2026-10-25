@@ -22,13 +22,17 @@ export function useBuilderSubmit(action: (formData: FormData) => Promise<Result>
         setError(undefined);
         startTransition(async () => {
             const result = await action(formData);
-            if (result.error) {
-                setError(result.error);
-                return;
-            }
-            form.reset();
-            onSaved();
-            router.push(typeof doneHref === "function" ? doneHref(formData) : doneHref);
+            // State updates after an await must be wrapped again to stay in the transition; otherwise they
+            // commit before the refreshed data does and the UI briefly shows stale values
+            startTransition(() => {
+                if (result.error) {
+                    setError(result.error);
+                    return;
+                }
+                form.reset();
+                onSaved();
+                router.push(typeof doneHref === "function" ? doneHref(formData) : doneHref);
+            });
         });
     }
 
