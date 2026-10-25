@@ -8,9 +8,9 @@
   - Supported: paragraphs, "- " bullet lists and **bold**. Nothing else is formatted.
 -->
 
-# Welcome to Upstars
+# Welcome to Upstars Assistant
 
-Upstars helps tutors, students and admins keep track of lessons and progress. Here's a quick tour of what you'll find. You can open this guide again from the **Guide** button on the home page.
+Upstars Assistant helps tutors, students and admins keep track of lessons and progress. Here's a quick tour of what you'll find. You can open this guide again from the **Guide** button on the home page.
 
 ## Lesson Check-In [admin, tutor]
 

@@ -73,7 +73,7 @@ function DemoSignIn() {
     return (
         <div className="flex flex-col gap-8">
             <header className="flex flex-col gap-2">
-                <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Try Upstars</h1>
+                <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Try Upstars Assistant</h1>
                 <p className="text-base text-zinc-500 dark:text-zinc-400">Explore with a demo account. No sign-up needed.</p>
             </header>
 

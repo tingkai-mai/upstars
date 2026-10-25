@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Upstars", template: "%s · Upstars" },
-  description: "Upstars",
+  title: { default: "Upstars Assistant", template: "%s · Upstars Assistant" },
+  description: "Lesson check-ins, goals and progress for Upstars tutors and students",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
