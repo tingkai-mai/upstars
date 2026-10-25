@@ -85,6 +85,13 @@
       "when": 1792935018156,
       "tag": "0011_resource_position",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792935598770,
+      "tag": "0012_onboarded_at",
+      "breakpoints": true
     }
   ]
 }

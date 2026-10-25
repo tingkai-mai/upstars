@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
+import { AuthTabs } from "./auth-tabs";
 
 async function RedirectIfSignedIn() {
     if (await getSession()) redirect("/");
@@ -14,7 +15,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
                 <RedirectIfSignedIn />
             </Suspense>
             <div className="w-full sm:max-w-sm sm:rounded-2xl sm:border sm:border-zinc-200 sm:bg-white sm:p-8 sm:shadow-sm dark:sm:border-zinc-800 dark:sm:bg-zinc-950">
-                {children}
+                <AuthTabs>{children}</AuthTabs>
             </div>
         </main>
     );

@@ -2,7 +2,14 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { SignOutButton } from "@/components/sign-out-button";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import { user as userTable } from "@/db/schema";
+import { loadGuide } from "@/lib/guide";
+import { isDemoEmail } from "@/lib/demo-accounts";
+import { isUserRole } from "@/lib/users";
 import { CheckInSection } from "@/app/check-in/check-in-section";
+import { OnboardingGuide } from "./onboarding-guide";
 
 type Module = { title: string; description: string; href?: string };
 
@@ -30,6 +37,7 @@ export default function Home({ searchParams }: Props) {
 async function Dashboard({ searchParams }: Pick<Props, "searchParams">) {
     const user = await requireUser();
     const canCheckIn = user.role === "tutor" || user.role === "admin";
+    const [[account], guidePages] = await Promise.all([db.select({ onboardedAt: userTable.onboardedAt }).from(userTable).where(eq(userTable.id, user.id)), loadGuide(isUserRole(user.role) ? user.role : "student")]);
     // Students only see their own profile in volunteer management
     const modules = user.role === "student" ? MODULES.map((m) => (m.href === "/volunteers" ? { title: "My profile", description: "Your tutor, goals and past lessons", href: `/volunteers/${user.id}` } : m)) : MODULES;
 
@@ -40,7 +48,10 @@ async function Dashboard({ searchParams }: Pick<Props, "searchParams">) {
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">Upstars</p>
                     <h1 className="truncate text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50">Hi, {user.name}</h1>
                 </div>
-                <SignOutButton />
+                <div className="flex shrink-0 gap-2">
+                    <OnboardingGuide pages={guidePages} seenIn={isDemoEmail(user.email) ? "browser" : "account"} seen={Boolean(account?.onboardedAt)} userId={user.id} />
+                    <SignOutButton />
+                </div>
             </header>
 
             {canCheckIn && <CheckInSection viewer={user} params={await searchParams} />}

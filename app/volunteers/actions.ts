@@ -9,11 +9,14 @@ import { db } from "@/db";
 import { pairing, user } from "@/db/schema";
 import { getAdminSession } from "@/lib/session";
 import { isUserRole, MIN_PASSWORD_LENGTH, type UserRole } from "@/lib/users";
+import { isDemoEmail } from "@/lib/demo-accounts";
 
 export type UserFormValues = { name: string; email: string; role: UserRole; currentLevel: string };
 export type ActionState = { error?: string };
 
 const NOT_ALLOWED = { error: "Only admins can manage volunteers." };
+// Shared by everyone trying the app, so they must keep working
+const DEMO_LOCKED = { error: "Demo accounts can't be edited or deleted." };
 
 function parseUserForm(formData: FormData): UserFormValues | null {
     const name = String(formData.get("name") ?? "").trim();
@@ -61,8 +64,9 @@ export async function updateUser(userId: string, _prev: ActionState, formData: F
         return { error: "You can't remove your own admin role." };
     }
 
-    const [existing] = await db.select({ role: user.role }).from(user).where(eq(user.id, userId));
+    const [existing] = await db.select({ role: user.role, email: user.email }).from(user).where(eq(user.id, userId));
     if (!existing) return { error: "This user no longer exists." };
+    if (isDemoEmail(existing.email) || isDemoEmail(values.email)) return DEMO_LOCKED;
 
     const { currentLevel, ...authValues } = values;
     try {
@@ -84,6 +88,8 @@ export async function deleteUser(userId: string): Promise<ActionState> {
     const session = await getAdminSession();
     if (!session) return NOT_ALLOWED;
     if (userId === session.user.id) return { error: "You can't delete your own account." };
+    const [target] = await db.select({ email: user.email }).from(user).where(eq(user.id, userId));
+    if (target && isDemoEmail(target.email)) return DEMO_LOCKED;
 
     try {
         // Sessions, accounts and pairings are removed by ON DELETE CASCADE

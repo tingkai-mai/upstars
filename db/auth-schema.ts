@@ -12,6 +12,8 @@ export const user = pgTable("user", {
   image: text("image"),
   // Free text, e.g. "Primary 6". Set by admins; better-auth doesn't know about it
   currentLevel: text("current_level"),
+  // When the user dismissed the first-login guide; null until then. Demo accounts track this per browser instead
+  onboardedAt: timestamp("onboarded_at"),
   // Fields required by the better-auth admin plugin
   role: userRole("role").default("student").notNull(),
   banned: boolean("banned").default(false),
