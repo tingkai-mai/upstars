@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { SignOutButton } from "@/components/sign-out-button";
+import { CheckInSection } from "@/app/check-in/check-in-section";
 
 type Module = { title: string; description: string; href?: string };
 
@@ -14,18 +15,21 @@ const MODULES: Module[] = [
 
 const tileClass = "flex min-h-24 flex-col justify-center gap-1 rounded-2xl border p-5 text-left";
 
-export default function Home() {
+type Props = PageProps<"/">;
+
+export default function Home({ searchParams }: Props) {
     return (
         <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-6 sm:px-6 sm:py-10">
             <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
-                <Dashboard />
+                <Dashboard searchParams={searchParams} />
             </Suspense>
         </main>
     );
 }
 
-async function Dashboard() {
+async function Dashboard({ searchParams }: Pick<Props, "searchParams">) {
     const user = await requireUser();
+    const canCheckIn = user.role === "tutor" || user.role === "admin";
 
     return (
         <>
@@ -36,6 +40,8 @@ async function Dashboard() {
                 </div>
                 <SignOutButton />
             </header>
+
+            {canCheckIn && <CheckInSection viewer={user} params={await searchParams} />}
 
             <nav aria-label="Modules" className="grid gap-3 sm:grid-cols-2">
                 {MODULES.map((module) => (module.href ? <ModuleLink key={module.title} module={module} href={module.href} /> : <DisabledModule key={module.title} module={module} />))}

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { check, foreignKey, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { check, date, foreignKey, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { TEST_TYPES } from "../lib/tests";
 import { user } from "./auth-schema";
 
@@ -187,5 +187,55 @@ export const testCompletion = pgTable(
     { ...completionColumns, testId: uuid("test_id").notNull().references(() => test.id, { onDelete: "cascade" }) },
     (table) => [primaryKey({ columns: [table.studentId, table.testId] }), index("test_completion_test_id_idx").on(table.testId)],
 );
+
+/**
+ * A lesson any tutor or admin (recordedBy) held with a student in one subject; no pairing is needed.
+ * recordedBy is nulled rather than cascaded so the student keeps their history.
+ */
+export const checkIn = pgTable(
+    "check_in",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        studentId: text("student_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+        subjectId: uuid("subject_id").notNull().references(() => subject.id, { onDelete: "cascade" }),
+        lessonDate: date("lesson_date", { mode: "string" }).notNull(),
+        remarks: text("remarks").notNull(),
+        recordedBy: text("recorded_by").references(() => user.id, { onDelete: "set null" }),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+    },
+    (table) => [
+        index("check_in_student_id_lesson_date_idx").on(table.studentId, table.lessonDate),
+        check("check_in_remarks_not_blank", sql`btrim(${table.remarks}) <> ''`),
+    ],
+);
+
+const checkInIdColumn = () => uuid("check_in_id").notNull().references(() => checkIn.id, { onDelete: "cascade" });
+
+/** What was covered in a check-in. Items must belong to the check-in's subject (checked in the app). */
+export const checkInConcept = pgTable(
+    "check_in_concept",
+    { checkInId: checkInIdColumn(), conceptId: uuid("concept_id").notNull().references(() => concept.id, { onDelete: "cascade" }) },
+    (table) => [primaryKey({ columns: [table.checkInId, table.conceptId] }), index("check_in_concept_concept_id_idx").on(table.conceptId)],
+);
+
+export const checkInWorksheet = pgTable(
+    "check_in_worksheet",
+    { checkInId: checkInIdColumn(), worksheetId: uuid("worksheet_id").notNull().references(() => worksheet.id, { onDelete: "cascade" }) },
+    (table) => [primaryKey({ columns: [table.checkInId, table.worksheetId] }), index("check_in_worksheet_worksheet_id_idx").on(table.worksheetId)],
+);
+
+export const checkInTest = pgTable(
+    "check_in_test",
+    { checkInId: checkInIdColumn(), testId: uuid("test_id").notNull().references(() => test.id, { onDelete: "cascade" }) },
+    (table) => [primaryKey({ columns: [table.checkInId, table.testId] }), index("check_in_test_test_id_idx").on(table.testId)],
+);
+
+/** A link to an external Upstars resource (guide, material, form). Managed by admins, visible to everyone. */
+export const resource = pgTable("resource", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    url: text("url").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 export * from "./auth-schema";

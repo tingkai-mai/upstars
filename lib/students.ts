@@ -33,3 +33,10 @@ export async function canEditStudent(viewer: Viewer, studentId: string) {
         .where(and(eq(pairing.tutorId, viewer.id), eq(pairing.studentId, studentId)));
     return Boolean(paired);
 }
+
+/** Whether this person may check in a lesson with the student: any tutor or admin, paired or not. */
+export async function canCheckIn(viewer: Viewer, studentId: string) {
+    if (viewer.role !== "admin" && viewer.role !== "tutor") return false;
+    const [student] = await db.select({ role: user.role }).from(user).where(eq(user.id, studentId));
+    return student?.role === "student";
+}

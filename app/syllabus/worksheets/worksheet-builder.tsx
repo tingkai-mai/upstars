@@ -45,14 +45,21 @@ export function WorksheetBuilder({ chapters, defaults, action, submitLabel, done
     );
 }
 
-type PickerProps = { chapter: Chapter; selected: Set<string>; onToggle: (ids: string[], checked: boolean) => void };
+type PickerProps = {
+    chapter: Chapter;
+    selected: Set<string>;
+    onToggle: (ids: string[], checked: boolean) => void;
+    /** Concepts to tag as already done, e.g. a student's completed ones */
+    doneIds?: Set<string>;
+    defaultOpen?: boolean;
+};
 
-function ChapterPicker({ chapter, selected, onToggle }: PickerProps) {
+export function ChapterPicker({ chapter, selected, onToggle, doneIds, defaultOpen = false }: PickerProps) {
     const ids = chapter.weeks.flatMap((w) => w.concepts.map((c) => c.id));
     const count = ids.filter((id) => selected.has(id)).length;
-    // Open chapters that start with selections, so editing shows what's chosen. Only the initial
+    // Open chapters that start with selections (or are asked to), so editing shows what's chosen. Only the initial
     // value is used: a live value would snap the chapter shut when its last concept is unticked.
-    const [initiallyOpen] = useState(count > 0);
+    const [initiallyOpen] = useState(defaultOpen || count > 0);
     if (ids.length === 0) return null;
 
     return (
@@ -102,6 +109,7 @@ function ChapterPicker({ chapter, selected, onToggle }: PickerProps) {
                                                     className="size-5 shrink-0 accent-zinc-900 dark:accent-zinc-100"
                                                 />
                                                 {concept.name}
+                                                {doneIds?.has(concept.id) && <DoneTag />}
                                             </label>
                                         </li>
                                     ))}
@@ -112,4 +120,8 @@ function ChapterPicker({ chapter, selected, onToggle }: PickerProps) {
             </div>
         </details>
     );
+}
+
+export function DoneTag() {
+    return <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Done</span>;
 }
