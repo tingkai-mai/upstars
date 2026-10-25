@@ -55,6 +55,9 @@ async function UserProfile({ params }: Pick<Props, "params">) {
                     <RoleBadge role={member.role} />
                     {id === admin.id && <span className="ml-2 text-sm text-zinc-500">(you)</span>}
                 </Detail>
+                <Detail label="Level">
+                    {member.currentLevel ? <span className="text-zinc-900 dark:text-zinc-50">{member.currentLevel}</span> : <span className="text-zinc-400">Not set</span>}
+                </Detail>
             </dl>
 
             {member.role !== "admin" && (

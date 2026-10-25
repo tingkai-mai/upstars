@@ -22,8 +22,8 @@ export async function listPairings(): Promise<Pairing[]> {
         .orderBy(asc(tutor.name), asc(student.name));
 }
 
-export async function listUsersByRole(role: UserRole): Promise<Person[]> {
-    return db.select({ id: user.id, name: user.name, email: user.email }).from(user).where(eq(user.role, role)).orderBy(asc(user.name));
+export async function listUsersByRole(role: UserRole): Promise<(Person & { currentLevel: string | null })[]> {
+    return db.select({ id: user.id, name: user.name, email: user.email, currentLevel: user.currentLevel }).from(user).where(eq(user.role, role)).orderBy(asc(user.name));
 }
 
 /** The people paired with a user: a tutor's students, or a student's tutors. Admins have none. */
@@ -39,6 +39,6 @@ export async function listPairedPeople(userId: string, role: UserRole): Promise<
 }
 
 export async function getUser(userId: string) {
-    const [found] = await db.select({ id: user.id, name: user.name, email: user.email, role: user.role }).from(user).where(eq(user.id, userId));
-    return found;
+    const [found] = await db.select({ id: user.id, name: user.name, email: user.email, role: user.role, currentLevel: user.currentLevel }).from(user).where(eq(user.id, userId));
+    return found && { ...found, currentLevel: found.currentLevel ?? "" };
 }

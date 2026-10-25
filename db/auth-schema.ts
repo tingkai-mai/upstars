@@ -10,6 +10,8 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  // Free text, e.g. "Primary 6". Set by admins; better-auth doesn't know about it
+  currentLevel: text("current_level"),
   // Fields required by the better-auth admin plugin
   role: userRole("role").default("student").notNull(),
   banned: boolean("banned").default(false),

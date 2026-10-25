@@ -57,6 +57,13 @@
       "when": 1792928666478,
       "tag": "0007_check_in_without_pairing",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792929199273,
+      "tag": "0008_current_level_and_rewards",
+      "breakpoints": true
     }
   ]
 }

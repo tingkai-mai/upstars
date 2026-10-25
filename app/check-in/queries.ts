@@ -2,6 +2,7 @@ import { asc, desc, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import { checkIn, checkInConcept, checkInTest, checkInWorksheet, concept, subject, test, user, week, worksheet } from "@/db/schema";
+import type { RewardPoints } from "./rewards";
 
 const recorder = alias(user, "recorder");
 
@@ -9,6 +10,7 @@ export type PastCheckIn = {
     id: string;
     lessonDate: string;
     remarks: string;
+    rewards: RewardPoints;
     subject: string;
     /** Null if that user has since been deleted */
     recordedByName: string | null;
@@ -20,7 +22,17 @@ export type PastCheckIn = {
 /** A student's check-ins by anyone, across all subjects, newest lesson first. */
 export async function listPastCheckIns(studentId: string, limit = 50): Promise<PastCheckIn[]> {
     const rows = await db
-        .select({ id: checkIn.id, lessonDate: checkIn.lessonDate, remarks: checkIn.remarks, level: subject.level, subjectName: subject.name, recordedByName: recorder.name })
+        .select({
+            id: checkIn.id,
+            lessonDate: checkIn.lessonDate,
+            remarks: checkIn.remarks,
+            attendancePoints: checkIn.attendancePoints,
+            behaviourPoints: checkIn.behaviourPoints,
+            bonusPoints: checkIn.bonusPoints,
+            level: subject.level,
+            subjectName: subject.name,
+            recordedByName: recorder.name,
+        })
         .from(checkIn)
         .innerJoin(subject, eq(checkIn.subjectId, subject.id))
         .leftJoin(recorder, eq(checkIn.recordedBy, recorder.id))
@@ -53,9 +65,10 @@ export async function listPastCheckIns(studentId: string, limit = 50): Promise<P
     ]);
     const namesFor = (items: { checkInId: string; name: string }[], id: string) => items.filter((i) => i.checkInId === id).map((i) => i.name);
 
-    return rows.map(({ level, subjectName, ...row }) => ({
+    return rows.map(({ level, subjectName, attendancePoints, behaviourPoints, bonusPoints, ...row }) => ({
         ...row,
         subject: `${level} ${subjectName}`,
+        rewards: { attendancePoints, behaviourPoints, bonusPoints },
         concepts: namesFor(concepts, row.id),
         worksheets: namesFor(worksheets, row.id),
         tests: namesFor(tests, row.id),

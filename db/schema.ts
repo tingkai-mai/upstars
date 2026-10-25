@@ -200,12 +200,19 @@ export const checkIn = pgTable(
         subjectId: uuid("subject_id").notNull().references(() => subject.id, { onDelete: "cascade" }),
         lessonDate: date("lesson_date", { mode: "string" }).notNull(),
         remarks: text("remarks").notNull(),
+        // Rewards, each 0–2; the score is their sum. Defaults only fill in check-ins made before rewards existed
+        attendancePoints: integer("attendance_points").notNull().default(0),
+        behaviourPoints: integer("behaviour_points").notNull().default(0),
+        bonusPoints: integer("bonus_points").notNull().default(0),
         recordedBy: text("recorded_by").references(() => user.id, { onDelete: "set null" }),
         createdAt: timestamp("created_at").defaultNow().notNull(),
     },
     (table) => [
         index("check_in_student_id_lesson_date_idx").on(table.studentId, table.lessonDate),
         check("check_in_remarks_not_blank", sql`btrim(${table.remarks}) <> ''`),
+        check("check_in_attendance_points_valid", sql`${table.attendancePoints} BETWEEN 0 AND 2`),
+        check("check_in_behaviour_points_valid", sql`${table.behaviourPoints} BETWEEN 0 AND 2`),
+        check("check_in_bonus_points_valid", sql`${table.bonusPoints} BETWEEN 0 AND 2`),
     ],
 );
 

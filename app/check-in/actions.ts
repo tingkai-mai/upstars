@@ -4,8 +4,9 @@ import { db } from "@/db";
 import { checkIn, checkInConcept, checkInTest, checkInWorksheet, concept, conceptCompletion, test, testCompletion, week, worksheet, worksheetCompletion } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { canCheckIn } from "@/lib/students";
-import { InvalidInput, runMutation, text, type FormResult } from "@/lib/form-data";
+import { InvalidInput, runMutation, text, wholeNumber, type FormResult } from "@/lib/form-data";
 import { MAX_REMARKS_LENGTH, todayInSingapore } from "./dates";
+import { MAX_POINTS_PER_REWARD, REWARDS, type RewardPoints } from "./rewards";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -33,9 +34,20 @@ function readLessonDate(formData: FormData) {
     return value;
 }
 
+/** Each reward must be chosen: a missing field would otherwise read as 0. */
+function readRewards(formData: FormData) {
+    const points = {} as RewardPoints;
+    for (const { key, label } of REWARDS) {
+        if (formData.get(key) === null) throw new InvalidInput(`Choose ${label.toLowerCase()} points.`);
+        points[key] = wholeNumber(formData, key, `${label} points`, { max: MAX_POINTS_PER_REWARD });
+    }
+    return points;
+}
+
 /** Reads the check-in form, checking that every ticked item belongs to the subject. */
 async function readCheckIn(tx: Transaction, subjectId: string, formData: FormData) {
     const lessonDate = readLessonDate(formData);
+    const rewards = readRewards(formData);
     const remarks = text(formData, "remarks", "Remarks");
     if (remarks.length > MAX_REMARKS_LENGTH) throw new InvalidInput(`Remarks can be at most ${MAX_REMARKS_LENGTH} characters.`);
     const conceptIds = checkedIds(formData, "conceptId");
@@ -52,7 +64,7 @@ async function readCheckIn(tx: Transaction, subjectId: string, formData: FormDat
     assertAllFound(concepts, conceptIds, "concepts");
     assertAllFound(worksheets, worksheetIds, "worksheets");
     assertAllFound(tests, testIds, "tests");
-    return { lessonDate, remarks, conceptIds, worksheetIds, testIds };
+    return { lessonDate, remarks, ...rewards, conceptIds, worksheetIds, testIds };
 }
 
 /** Records a lesson with a student and marks what was covered as done in goal tracking. Any tutor or admin may. */

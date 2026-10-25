@@ -6,9 +6,12 @@ import type { Chapter } from "@/app/syllabus/queries";
 import { ChapterPicker, DoneTag } from "@/app/syllabus/worksheets/worksheet-builder";
 import { useOnCheckInSaved } from "./check-in-dialog";
 import { formatLessonDate, MAX_REMARKS_LENGTH } from "./dates";
+import { formatRewards, MAX_POINTS_PER_REWARD, MAX_SCORE, REWARDS, totalScore, type RewardKey, type RewardPoints } from "./rewards";
 
 type Item = { id: string; name: string; detail?: string; done: boolean };
-type TabKey = "concepts" | "worksheets" | "tests" | "remarks";
+type TabKey = "concepts" | "worksheets" | "tests" | "rewards" | "remarks";
+
+const POINT_OPTIONS = Array.from({ length: MAX_POINTS_PER_REWARD + 1 }, (_, points) => points);
 
 type Props = {
     studentName: string;
@@ -26,6 +29,7 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
     const onSaved = useOnCheckInSaved();
     // Concept, worksheet and test ids are all UUIDs, so one set holds every tick
     const [selected, setSelected] = useState<Set<string>>(() => new Set());
+    const [rewards, setRewards] = useState<Partial<RewardPoints>>({});
     const [remarks, setRemarks] = useState("");
     const [tab, setTab] = useState<TabKey>("concepts");
     const [error, setError] = useState<string>();
@@ -38,6 +42,9 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
     const worksheetCount = worksheets.filter((w) => selected.has(w.id)).length;
     const testCount = tests.filter((t) => selected.has(t.id)).length;
     const conceptCount = selected.size - worksheetCount - testCount;
+    // Undefined until every reward has points
+    const chosenRewards = REWARDS.every((r) => rewards[r.key] !== undefined) ? (rewards as RewardPoints) : undefined;
+    const score = chosenRewards && totalScore(chosenRewards);
 
     function toggle(ids: string[], checked: boolean) {
         setSelected((current) => {
@@ -53,6 +60,11 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
     function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         // Checked here rather than with `required`: the browser can't point at a field in a hidden tab
+        if (!chosenRewards) {
+            setTab("rewards");
+            setError("Choose points for each reward before checking in.");
+            return;
+        }
         if (!remarks.trim()) {
             setTab("remarks");
             setError("Add remarks about the lesson before checking in.");
@@ -71,7 +83,7 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
                 const lessonDate = formatLessonDate(String(formData.get("lessonDate")));
                 onSaved({
                     message: `Checked in ${studentName}'s lesson on ${lessonDate}.`,
-                    shareText: `Lesson check-in: ${studentName}\n${lessonDate} · ${subjectName}\n\n${remarks.trim()}`,
+                    shareText: `Lesson check-in: ${studentName}\n${lessonDate} · ${subjectName}\n${formatRewards(chosenRewards)}\n\n${remarks.trim()}`,
                 });
             });
         });
@@ -90,9 +102,15 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
             badge: worksheetCount,
         },
         { key: "tests", label: "Tests", badge: testCount },
+        { key: "rewards", label: "Rewards", badge: Boolean(chosenRewards) },
         { key: "remarks", label: "Remarks", badge: remarks.trim() !== "" },
     ];
-    const summary = [pluralize(conceptCount, "concept"), pluralize(worksheetCount, "worksheet"), pluralize(testCount, "test")].join(" · ");
+    const summary = [
+        pluralize(conceptCount, "concept"),
+        pluralize(worksheetCount, "worksheet"),
+        pluralize(testCount, "test"),
+        ...(score === undefined ? [] : [`score ${score}/${MAX_SCORE}`]),
+    ].join(" · ");
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -100,7 +118,7 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
                 <input id="lessonDate" name="lessonDate" type="date" required max={today} defaultValue={today} className={inputClass} />
             </Field>
 
-            <div role="tablist" aria-label="What was covered" className="grid grid-cols-4 gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-900">
+            <div role="tablist" aria-label="What was covered" className="grid grid-cols-5 gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-900">
                 {tabs.map((t) => (
                     <button
                         key={t.key}
@@ -110,7 +128,7 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
                         aria-selected={tab === t.key}
                         aria-controls={`${tabsId}-${t.key}`}
                         onClick={() => setTab(t.key)}
-                        className={`flex h-10 items-center justify-center gap-1 rounded-lg px-1 text-xs font-medium transition sm:text-sm ${
+                        className={`relative flex h-11 items-center justify-center rounded-lg px-0.5 text-xs font-medium transition sm:text-sm ${
                             tab === t.key ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50" : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                         }`}
                     >
@@ -132,6 +150,24 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
             </TabPanel>
             <TabPanel id={`${tabsId}-tests`} active={tab === "tests"}>
                 <ItemChecklist name="testId" items={tests} selected={selected} onToggle={toggle} empty="This subject has no tests yet." />
+            </TabPanel>
+            <TabPanel id={`${tabsId}-rewards`} active={tab === "rewards"}>
+                {REWARDS.map((reward) => (
+                    <PointsPicker
+                        key={reward.key}
+                        name={reward.key}
+                        label={`${reward.label} points`}
+                        value={rewards[reward.key]}
+                        onChange={(points) => setRewards((current) => ({ ...current, [reward.key]: points }))}
+                    />
+                ))}
+                <p className="flex items-center justify-between rounded-xl bg-zinc-900 px-4 py-3 text-white dark:bg-zinc-50 dark:text-zinc-900">
+                    <span className="text-sm font-medium">Score</span>
+                    <span className="text-2xl font-semibold tabular-nums">
+                        {score ?? "–"}
+                        <span className="text-base font-normal opacity-60">/{MAX_SCORE}</span>
+                    </span>
+                </p>
             </TabPanel>
             <TabPanel id={`${tabsId}-remarks`} active={tab === "remarks"}>
                 <label htmlFor="remarks" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -168,16 +204,39 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
     );
 }
 
+// In the tab's top-right corner rather than beside the label, so five labels fit across a phone
 function TabBadge({ value }: { value?: number | boolean }) {
     if (!value) return null;
     if (value === true) {
         return (
-            <span className="size-1.5 rounded-full bg-emerald-500">
+            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-emerald-500">
                 <span className="sr-only">(filled in)</span>
             </span>
         );
     }
-    return <span className="min-w-4 rounded-full bg-emerald-600 px-1 text-[0.625rem] leading-4 font-semibold tabular-nums text-white">{value}</span>;
+    return <span className="absolute top-0.5 right-0.5 min-w-3.5 rounded-full bg-emerald-600 px-0.5 text-center text-[0.625rem] leading-3.5 font-semibold tabular-nums text-white">{value}</span>;
+}
+
+type PointsPickerProps = { name: RewardKey; label: string; value?: number; onChange: (points: number) => void };
+
+/** Radio buttons drawn as a 0–2 segmented control. */
+function PointsPicker({ name, label, value, onChange }: PointsPickerProps) {
+    return (
+        <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">{label}</legend>
+            <div className="grid grid-cols-3 gap-2">
+                {POINT_OPTIONS.map((points) => (
+                    <label
+                        key={points}
+                        className="flex h-12 cursor-pointer items-center justify-center rounded-xl border border-zinc-300 text-lg font-semibold tabular-nums text-zinc-700 transition has-checked:border-zinc-900 has-checked:bg-zinc-900 has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-zinc-900/20 dark:border-zinc-700 dark:text-zinc-300 dark:has-checked:border-zinc-50 dark:has-checked:bg-zinc-50 dark:has-checked:text-zinc-900"
+                    >
+                        <input type="radio" name={name} value={points} checked={value === points} onChange={() => onChange(points)} className="sr-only" />
+                        {points}
+                    </label>
+                ))}
+            </div>
+        </fieldset>
+    );
 }
 
 // A minimum height stops the modal jumping as tabs switch

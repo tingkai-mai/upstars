@@ -25,7 +25,7 @@ async function UserList() {
     if (!admin) return <AdminOnly />;
 
     const users = await db
-        .select({ id: user.id, name: user.name, email: user.email, role: user.role })
+        .select({ id: user.id, name: user.name, email: user.email, role: user.role, currentLevel: user.currentLevel })
         .from(user)
         .orderBy(asc(user.name));
 
@@ -58,7 +58,10 @@ async function UserList() {
                                     {member.name}
                                     {member.id === admin.id && <span className="font-normal text-zinc-500"> (you)</span>}
                                 </p>
-                                <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">{member.email}</p>
+                                <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
+                                    {member.email}
+                                    {member.currentLevel && ` · ${member.currentLevel}`}
+                                </p>
                             </div>
                             <RoleBadge role={member.role} />
                             <span aria-hidden className="text-zinc-400">›</span>

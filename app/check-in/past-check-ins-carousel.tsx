@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { secondaryButtonClass } from "@/components/form";
 import { formatLessonDate } from "./dates";
+import { MAX_SCORE, REWARDS, totalScore } from "./rewards";
 import type { PastCheckIn } from "./queries";
 
 /**
@@ -71,6 +72,20 @@ function CheckInCard({ checkIn }: { checkIn: PastCheckIn }) {
                     {checkIn.subject} · By {checkIn.recordedByName ?? "a former user"}
                 </p>
             </div>
+            <dl className="grid grid-cols-4 gap-1 rounded-lg bg-white p-1 text-center dark:bg-zinc-950">
+                {REWARDS.map((r) => (
+                    <div key={r.key} className="py-1">
+                        <dt className="text-[0.625rem] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{r.label}</dt>
+                        <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">{checkIn.rewards[r.key]}</dd>
+                    </div>
+                ))}
+                <div className="rounded-md bg-zinc-900 py-1 text-white dark:bg-zinc-50 dark:text-zinc-900">
+                    <dt className="text-[0.625rem] uppercase tracking-wide opacity-70">Score</dt>
+                    <dd className="font-semibold tabular-nums">
+                        {totalScore(checkIn.rewards)}/{MAX_SCORE}
+                    </dd>
+                </div>
+            </dl>
             <CoveredLine label="Concepts" names={checkIn.concepts} />
             <CoveredLine label="Worksheets" names={checkIn.worksheets} />
             <CoveredLine label="Tests" names={checkIn.tests} />

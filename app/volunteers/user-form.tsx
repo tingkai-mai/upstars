@@ -53,6 +53,10 @@ export function UserForm({ action, defaults, mode, roleLocked = false }: Props) 
                 {roleLocked && <input type="hidden" name="role" value={defaults.role} />}
             </Field>
 
+            <Field label="Current level (optional)" htmlFor="currentLevel" hint="Mainly for students.">
+                <input id="currentLevel" name="currentLevel" type="text" autoComplete="off" defaultValue={defaults.currentLevel} placeholder="e.g. Primary 6" className={inputClass} />
+            </Field>
+
             {mode === "create" && (
                 <Field label="Temporary password" htmlFor="password" hint={`At least ${MIN_PASSWORD_LENGTH} characters. Share it with the user so they can sign in.`}>
                     <input id="password" name="password" type="text" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} required className={inputClass} />

@@ -3,7 +3,7 @@ import { getSubjectPlan, listTests, listWorksheets } from "@/app/syllabus/querie
 import { resolveSelection } from "@/app/syllabus/selection";
 import { SyllabusFilter } from "@/app/syllabus/syllabus-filter";
 import { EmptyState, formatWeeks } from "@/app/syllabus/ui";
-import { listPairedPeople, listUsersByRole, type Person } from "@/app/volunteers/queries";
+import { listPairedPeople, listUsersByRole } from "@/app/volunteers/queries";
 import { getCompletion } from "@/app/goals/queries";
 import { createCheckIn } from "./actions";
 import { CheckInActions } from "./check-in-dialog";
@@ -44,7 +44,8 @@ export async function CheckInSection({ viewer, params }: { viewer: Viewer; param
     );
 }
 
-type ContentProps = { students: Person[]; student: Person };
+type Student = Awaited<ReturnType<typeof listUsersByRole>>[number];
+type ContentProps = { students: Student[]; student: Student };
 
 /** The check-in modal's contents: student and subject (kept in the URL), then the check-in form. */
 async function CheckInContent({ students, student, params }: ContentProps & { params: SearchParams }) {

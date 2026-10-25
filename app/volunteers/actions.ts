@@ -10,7 +10,7 @@ import { pairing, user } from "@/db/schema";
 import { getAdminSession } from "@/lib/session";
 import { isUserRole, MIN_PASSWORD_LENGTH, type UserRole } from "@/lib/users";
 
-export type UserFormValues = { name: string; email: string; role: UserRole };
+export type UserFormValues = { name: string; email: string; role: UserRole; currentLevel: string };
 export type ActionState = { error?: string };
 
 const NOT_ALLOWED = { error: "Only admins can manage volunteers." };
@@ -19,8 +19,14 @@ function parseUserForm(formData: FormData): UserFormValues | null {
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim().toLowerCase();
     const role = formData.get("role");
+    const currentLevel = String(formData.get("currentLevel") ?? "").trim();
     if (!name || !email || !isUserRole(role)) return null;
-    return { name, email, role };
+    return { name, email, role, currentLevel };
+}
+
+/** better-auth doesn't know about currentLevel, so it's saved separately; blank means not set. */
+async function saveCurrentLevel(userId: string, currentLevel: string) {
+    await db.update(user).set({ currentLevel: currentLevel || null }).where(eq(user.id, userId));
 }
 
 function errorMessage(error: unknown) {
@@ -36,8 +42,10 @@ export async function createUser(_prev: ActionState, formData: FormData): Promis
         return { error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` };
     }
 
+    const { currentLevel, ...authValues } = values;
     try {
-        await auth.api.createUser({ body: { ...values, password }, headers: await headers() });
+        const created = await auth.api.createUser({ body: { ...authValues, password }, headers: await headers() });
+        await saveCurrentLevel(created.user.id, currentLevel);
     } catch (error) {
         return { error: errorMessage(error) };
     }
@@ -56,8 +64,10 @@ export async function updateUser(userId: string, _prev: ActionState, formData: F
     const [existing] = await db.select({ role: user.role }).from(user).where(eq(user.id, userId));
     if (!existing) return { error: "This user no longer exists." };
 
+    const { currentLevel, ...authValues } = values;
     try {
-        await auth.api.adminUpdateUser({ body: { userId, data: values }, headers: await headers() });
+        await auth.api.adminUpdateUser({ body: { userId, data: authValues }, headers: await headers() });
+        await saveCurrentLevel(userId, currentLevel);
     } catch (error) {
         return { error: errorMessage(error) };
     }
