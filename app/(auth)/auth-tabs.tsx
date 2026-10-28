@@ -35,8 +35,8 @@ export function AuthTabs({ children }: { children: ReactNode }) {
                         aria-selected={tab === t.key}
                         aria-controls={`${id}-${t.key}`}
                         onClick={() => setTab(t.key)}
-                        className={`flex h-10 items-center justify-center rounded-lg text-sm font-medium transition ${
-                            tab === t.key ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50" : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                        className={`flex h-12 items-center justify-center rounded-lg text-base font-medium transition ${
+                            tab === t.key ? "bg-white font-semibold text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50" : "text-zinc-700 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                         }`}
                     >
                         {t.label}
@@ -74,7 +74,7 @@ function DemoSignIn() {
         <div className="flex flex-col gap-8">
             <header className="flex flex-col gap-2">
                 <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Try Upstars Assistant</h1>
-                <p className="text-base text-zinc-500 dark:text-zinc-400">Explore with a demo account. No sign-up needed.</p>
+                <p className="text-base text-zinc-600 dark:text-zinc-400">Explore with a demo account. No sign-up needed.</p>
             </header>
 
             <div className="flex flex-col gap-5">
@@ -94,7 +94,7 @@ function DemoSignIn() {
                     {pending ? "Signing in…" : `Sign in as ${account.name}`}
                 </button>
 
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Demo accounts are shared, so other people may be using them at the same time and will see your changes.</p>
+                <p className="text-base text-zinc-600 dark:text-zinc-400">Demo accounts are shared, so other people may be using them at the same time and will see your changes.</p>
             </div>
         </div>
     );

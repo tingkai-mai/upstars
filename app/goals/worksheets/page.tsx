@@ -14,7 +14,7 @@ type Props = PageProps<"/goals/worksheets">;
 export default function WorksheetProgressPage({ searchParams }: Props) {
     return (
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-            <Suspense fallback={<p className="text-zinc-500">Loading progress…</p>}>
+            <Suspense fallback={<p className="text-zinc-600">Loading progress…</p>}>
                 <WorksheetProgress searchParams={searchParams} />
             </Suspense>
         </main>
@@ -40,7 +40,7 @@ async function WorksheetProgress({ searchParams }: Pick<Props, "searchParams">) 
                             <tr key={sheet.id} className="border-t border-zinc-200 dark:border-zinc-800">
                                 <td className="px-3 py-2.5 align-top">
                                     <span className="block font-medium text-zinc-900 dark:text-zinc-50">{sheet.name}</span>
-                                    <span className="block text-xs text-zinc-500 dark:text-zinc-400">
+                                    <span className="block text-sm text-zinc-600 dark:text-zinc-400">
                                         {weeks} · {pluralize(sheet.concepts.length, "concept")}
                                         {sheet.durationMin !== null && ` · ${formatMinutes(sheet.durationMin)}`}
                                         {completedAt && ` · Done ${formatCompletedOn(completedAt)}`}

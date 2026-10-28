@@ -4,7 +4,7 @@ import { isAdmin, requireUser } from "@/lib/session";
 import { pluralize } from "@/lib/format";
 import { PageHeader } from "@/components/page-header";
 import { FormDialog } from "@/components/form-dialog";
-import { inlineEditButtonClass } from "@/components/form";
+import { compactPrimaryButtonClass, inlineEditButtonClass } from "@/components/form";
 import { PenIcon } from "@/components/icons";
 import { MoveButtons } from "@/components/move-buttons";
 import { EmptyState } from "@/app/syllabus/ui";
@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Upstars resources" };
 export default function ResourcesPage() {
     return (
         <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-            <Suspense fallback={<p className="text-zinc-500">Loading resources…</p>}>
+            <Suspense fallback={<p className="text-zinc-600">Loading resources…</p>}>
                 <Resources />
             </Suspense>
         </main>
@@ -41,7 +41,7 @@ async function Resources() {
                             title="Add resource"
                             trigger="Add resource"
                             triggerLabel="Add resource"
-                            triggerClassName="inline-flex h-10 shrink-0 items-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                            triggerClassName={compactPrimaryButtonClass}
                             submitLabel="Add resource"
                             action={createResource}
                         >
@@ -55,7 +55,7 @@ async function Resources() {
                 <EmptyState>{admin ? "No resources yet. Add guides, materials and forms for tutors and students." : "No resources yet. Check back later."}</EmptyState>
             ) : (
                 <section aria-label="Resources" className="flex flex-col gap-2">
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{pluralize(resources.length, "resource")}</p>
+                    <p className="text-base text-zinc-600 dark:text-zinc-400">{pluralize(resources.length, "resource")}</p>
                     <ul className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
                         {resources.map((r, index) => (
                             <ResourceRow key={r.id} resource={r} admin={admin} isFirst={index === 0} isLast={index === resources.length - 1} />
@@ -85,9 +85,9 @@ function ResourceRow({ resource, admin, isFirst, isLast }: RowProps) {
                 className="flex min-h-16 min-w-0 flex-1 items-center gap-3 py-3 pl-4 transition hover:bg-zinc-50 active:bg-zinc-100 dark:hover:bg-zinc-900 dark:active:bg-zinc-800"
             >
                 <div className="min-w-0 flex-1">
-                    <p className="font-medium text-zinc-900 dark:text-zinc-50">{resource.name}</p>
-                    {resource.description && <p className="text-sm text-zinc-600 dark:text-zinc-300">{resource.description}</p>}
-                    <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{displayHost(resource.url)}</p>
+                    <p className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{resource.name}</p>
+                    {resource.description && <p className="text-base text-zinc-700 dark:text-zinc-300">{resource.description}</p>}
+                    <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">{displayHost(resource.url)}</p>
                 </div>
                 <span aria-hidden className="shrink-0 pr-2 text-zinc-400">
                     ↗

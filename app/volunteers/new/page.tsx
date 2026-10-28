@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Add user" };
 
 export default function NewUserPage() {
     return (
-        <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+        <Suspense fallback={<p className="text-zinc-600">Loading…</p>}>
             <NewUser />
         </Suspense>
     );

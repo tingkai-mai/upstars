@@ -32,7 +32,7 @@ type FilterSelectProps = {
 export function FilterSelect({ id, label, value, onChange, options, className = "" }: FilterSelectProps) {
     return (
         <div className={`flex flex-col gap-1.5 ${className}`}>
-            <label htmlFor={id} className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <label htmlFor={id} className="text-sm font-medium text-zinc-800 dark:text-zinc-300">
                 {label}
             </label>
             <select id={id} value={value} onChange={(event) => onChange(event.target.value)} className={selectClass} style={selectStyle}>

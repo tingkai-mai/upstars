@@ -35,3 +35,53 @@ export function CheckIcon() {
         </svg>
     );
 }
+
+// Larger icons for the homepage's module cards
+const moduleIconProps = { ...iconProps, strokeWidth: 1.5, className: "size-6 shrink-0" } as const;
+
+export function PeopleIcon() {
+    return (
+        <svg {...moduleIconProps}>
+            <circle cx="7.5" cy="6.5" r="2.5" />
+            <path d="M2.5 16c0-2.8 2.2-5 5-5s5 2.2 5 5" />
+            <circle cx="14" cy="7.5" r="2" />
+            <path d="M13.5 11.6c2.3-.3 4 1.6 4 4.4" />
+        </svg>
+    );
+}
+
+export function BookIcon() {
+    return (
+        <svg {...moduleIconProps}>
+            <path d="M10 5.5C8.5 4.3 6.3 3.8 3 4v11c3.3-.2 5.5.3 7 1.5 1.5-1.2 3.7-1.7 7-1.5V4c-3.3-.2-5.5.3-7 1.5Z" />
+            <path d="M10 5.5v11" />
+        </svg>
+    );
+}
+
+export function TargetIcon() {
+    return (
+        <svg {...moduleIconProps}>
+            <circle cx="10" cy="10" r="7" />
+            <circle cx="10" cy="10" r="4" />
+            <circle cx="10" cy="10" r="1" />
+        </svg>
+    );
+}
+
+export function LinkIcon() {
+    return (
+        <svg {...moduleIconProps}>
+            <path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.6-2.6a3 3 0 0 0-4.2-4.2l-.9.9" />
+            <path d="M11.5 8.5a3 3 0 0 0-4.2 0l-2.6 2.6a3 3 0 0 0 4.2 4.2l.9-.9" />
+        </svg>
+    );
+}
+
+export function ChevronRightIcon() {
+    return (
+        <svg {...iconProps} className="size-5 shrink-0">
+            <path d="m8 5 5 5-5 5" />
+        </svg>
+    );
+}

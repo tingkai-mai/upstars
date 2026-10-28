@@ -16,7 +16,7 @@ type Props = PageProps<"/goals/syllabus">;
 export default function SyllabusProgressPage({ searchParams }: Props) {
     return (
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-            <Suspense fallback={<p className="text-zinc-500">Loading progress…</p>}>
+            <Suspense fallback={<p className="text-zinc-600">Loading progress…</p>}>
                 <SyllabusProgress searchParams={searchParams} />
             </Suspense>
         </main>
@@ -55,7 +55,7 @@ function ChapterProgress({ chapter, studentId, data, conceptLessons }: { chapter
             title={
                 <span className="flex items-center justify-between gap-3">
                     {chapter.name}
-                    <span className={`shrink-0 text-sm tabular-nums ${value === 100 ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-500 dark:text-zinc-400"}`}>{value}%</span>
+                    <span className={`shrink-0 text-sm tabular-nums ${value === 100 ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-600 dark:text-zinc-400"}`}>{value}%</span>
                 </span>
             }
             subtitle={
@@ -72,7 +72,7 @@ function ChapterProgress({ chapter, studentId, data, conceptLessons }: { chapter
             ) : (
                 <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
                     <table className="w-full border-collapse text-left text-sm">
-                        <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                        <thead className="bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
                             <tr>
                                 <th scope="col" className="w-24 px-3 py-2 font-medium sm:w-32">
                                     Week
@@ -107,7 +107,7 @@ function WeekProgress({ week, studentId, data, conceptLessons }: { week: Week; s
                 {data.canEdit && week.concepts.length > 1 && (
                     <WeekCompletionCheckbox studentId={studentId} conceptIds={week.concepts.map((c) => c.id)} doneCount={done} weekNumber={week.number} editable />
                 )}
-                <span className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
+                <span className="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">
                     {done}/{week.concepts.length}
                 </span>
             </span>
@@ -119,7 +119,7 @@ function WeekProgress({ week, studentId, data, conceptLessons }: { week: Week; s
             {week.concepts.length === 0 && (
                 <tr>
                     {weekCell}
-                    <td colSpan={3} className="px-3 py-2.5 text-zinc-500 dark:text-zinc-400">
+                    <td colSpan={3} className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400">
                         No concepts yet
                     </td>
                 </tr>
@@ -129,7 +129,7 @@ function WeekProgress({ week, studentId, data, conceptLessons }: { week: Week; s
                 return (
                     <tr key={concept.id} className="border-t border-zinc-100 first:border-t-0 dark:border-zinc-800/60">
                         {index === 0 && weekCell}
-                        <td className={`px-3 py-2.5 align-top ${isDone ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-800 dark:text-zinc-200"}`}>{concept.name}</td>
+                        <td className={`px-3 py-2.5 align-top ${isDone ? "text-zinc-600 dark:text-zinc-400" : "text-zinc-800 dark:text-zinc-200"}`}>{concept.name}</td>
                         <td className="px-2 py-1.5 align-top">
                             <ConceptCoverage conceptName={concept.name} lessons={conceptLessons.get(concept.id) ?? []} completedAt={data.completion.concepts.get(concept.id)} />
                         </td>

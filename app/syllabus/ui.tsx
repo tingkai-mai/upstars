@@ -19,11 +19,11 @@ export function Accordion({ title, subtitle, nested = false, defaultOpen, childr
                 }`}
             >
                 <div className="min-w-0 flex-1">
-                    <h3 className={`font-semibold text-zinc-900 dark:text-zinc-50 ${nested ? "text-sm" : ""}`}>{title}</h3>
+                    <h3 className={`font-semibold text-zinc-900 dark:text-zinc-50 ${nested ? "text-base" : "text-lg"}`}>{title}</h3>
                     {/* A div, not a p: subtitles can hold block content such as a progress bar */}
-                    {subtitle && <div className="text-sm text-zinc-500 dark:text-zinc-400">{subtitle}</div>}
+                    {subtitle && <div className="text-sm text-zinc-600 dark:text-zinc-400">{subtitle}</div>}
                 </div>
-                <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.75} className="size-4 shrink-0 text-zinc-400 transition group-open/accordion:rotate-180">
+                <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.75} className="size-5 shrink-0 text-zinc-600 transition group-open/accordion:rotate-180 dark:text-zinc-400">
                     <path d="m6 8 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
             </summary>
@@ -33,7 +33,7 @@ export function Accordion({ title, subtitle, nested = false, defaultOpen, childr
 }
 
 export function EmptyState({ children }: { children: ReactNode }) {
-    return <div className="rounded-xl border border-dashed border-zinc-300 p-5 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">{children}</div>;
+    return <div className="rounded-xl border-2 border-dashed border-zinc-300 p-6 text-center text-base text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">{children}</div>;
 }
 
 /** [3, 1, 2] → "Weeks 1–3", [4] → "Week 4", [1, 3] → "Weeks 1, 3", [] → "No weeks" */

@@ -10,10 +10,10 @@ export function Tabs({ label, tabs }: { label: string; tabs: Tab[] }) {
                     key={tab.href}
                     href={tab.href}
                     aria-current={tab.active ? "page" : undefined}
-                    className={`flex h-10 items-center justify-center rounded-lg px-4 text-sm font-medium transition ${
+                    className={`flex h-12 items-center justify-center rounded-lg px-2 text-sm font-medium transition sm:px-4 sm:text-base ${
                         tab.active
-                            ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
-                            : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                            ? "bg-white font-semibold text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
+                            : "text-zinc-700 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                     }`}
                 >
                     {tab.label}

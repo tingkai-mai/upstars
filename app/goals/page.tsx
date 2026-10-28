@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { FormDialog } from "@/components/form-dialog";
-import { inlineEditButtonClass } from "@/components/form";
+import { compactPrimaryButtonClass, inlineEditButtonClass } from "@/components/form";
 import { EmptyState } from "@/app/syllabus/ui";
 import { loadProgress } from "./context";
 import { GoalsHeader } from "./goals-header";
@@ -17,7 +17,7 @@ type Props = PageProps<"/goals">;
 export default function GoalsPage({ searchParams }: Props) {
     return (
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-            <Suspense fallback={<p className="text-zinc-500">Loading goals…</p>}>
+            <Suspense fallback={<p className="text-zinc-600">Loading goals…</p>}>
                 <GoalsTab searchParams={searchParams} />
             </Suspense>
         </main>
@@ -45,7 +45,7 @@ async function GoalsTab({ searchParams }: Pick<Props, "searchParams">) {
                                 title="Add goal"
                                 trigger="Add goal"
                                 triggerLabel="Add goal"
-                                triggerClassName="inline-flex h-10 shrink-0 items-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                                triggerClassName={compactPrimaryButtonClass}
                                 submitLabel="Add goal"
                                 action={createGoal.bind(null, student.id, selection.subject.id)}
                             >
@@ -58,8 +58,8 @@ async function GoalsTab({ searchParams }: Pick<Props, "searchParams">) {
                         <EmptyState>No goals yet{data.canEdit ? ". Add one for this quarter." : "."}</EmptyState>
                     ) : (
                         <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
-                            <table className="w-full border-collapse text-left text-sm">
-                                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                            <table className="w-full border-collapse text-left text-base">
+                                <thead className="bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
                                     <tr>
                                         <th scope="col" className="px-3 py-2 font-medium">
                                             Quarter
@@ -97,7 +97,7 @@ function GoalRow({ goal, canEdit, now }: { goal: Goal; canEdit: boolean; now: { 
         <tr className="border-t border-zinc-200 align-top dark:border-zinc-800">
             <th scope="row" className="px-3 py-3 font-normal">
                 <span className="block font-semibold text-zinc-900 dark:text-zinc-50">{label}</span>
-                <span className="block text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="block text-sm text-zinc-600 dark:text-zinc-400">
                     {MONTHS[goal.month - 1]} {goal.year}
                 </span>
             </th>

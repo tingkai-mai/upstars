@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { compactPrimaryButtonClass, inlineEditButtonClass } from "@/components/form";
+import { PenIcon } from "@/components/icons";
 import { isAdmin, requireUser } from "@/lib/session";
 import { formatMinutes, pluralize } from "@/lib/format";
 import { listWorksheets, type WorksheetSummary } from "../queries";
@@ -15,7 +17,7 @@ type Props = PageProps<"/syllabus/worksheets">;
 export default function WorksheetsPage({ searchParams }: Props) {
     return (
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-            <Suspense fallback={<p className="text-zinc-500">Loading worksheets…</p>}>
+            <Suspense fallback={<p className="text-zinc-600">Loading worksheets…</p>}>
                 <WorksheetsTab searchParams={searchParams} />
             </Suspense>
         </main>
@@ -38,17 +40,9 @@ async function WorksheetsTab({ searchParams }: Pick<Props, "searchParams">) {
             ) : (
                 <>
                     <div className="flex items-center justify-between gap-4">
-                        <div>
-                            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                                {subject.level} {subject.name}
-                            </h2>
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">{pluralize(worksheets.length, "worksheet")}</p>
-                        </div>
+                        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{pluralize(worksheets.length, "worksheet")}</h2>
                         {canEdit && (
-                            <Link
-                                href={`/syllabus/worksheets/new?subject=${subject.id}`}
-                                className="inline-flex h-10 shrink-0 items-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-                            >
+                            <Link href={`/syllabus/worksheets/new?subject=${subject.id}`} className={compactPrimaryButtonClass}>
                                 New worksheet
                             </Link>
                         )}
@@ -78,13 +72,13 @@ function WorksheetAccordion({ sheet, canEdit }: { sheet: WorksheetSummary; canEd
                 <p className="text-sm text-amber-700 dark:text-amber-400">This worksheet has no concepts left. Edit it to choose some.</p>
             ) : (
                 <>
-                    {perConcept !== null && sheet.concepts.length > 1 && <p className="text-sm text-zinc-500 dark:text-zinc-400">{formatMinutes(perConcept)} per concept</p>}
+                    {perConcept !== null && sheet.concepts.length > 1 && <p className="text-sm text-zinc-600 dark:text-zinc-400">{formatMinutes(perConcept)} per concept</p>}
                     <ol className="flex flex-col gap-1">
                         {sheet.concepts.map((concept, index) => (
-                            <li key={concept.id} className="flex items-start gap-3 text-sm text-zinc-800 dark:text-zinc-200">
+                            <li key={concept.id} className="flex items-start gap-3 text-base text-zinc-800 dark:text-zinc-200">
                                 <span className="w-5 shrink-0 pt-px text-right tabular-nums text-zinc-400">{index + 1}.</span>
                                 <span className="flex-1">{concept.name}</span>
-                                <span className="shrink-0 rounded-md bg-zinc-100 px-1.5 py-0.5 text-xs tabular-nums text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">Wk {concept.weekNumber}</span>
+                                <span className="shrink-0 rounded-md bg-zinc-100 px-1.5 py-0.5 text-sm tabular-nums text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">Week {concept.weekNumber}</span>
                             </li>
                         ))}
                     </ol>
@@ -92,10 +86,8 @@ function WorksheetAccordion({ sheet, canEdit }: { sheet: WorksheetSummary; canEd
             )}
             {canEdit && (
                 <div className="flex justify-end">
-                    <Link
-                        href={`/syllabus/worksheets/${sheet.id}`}
-                        className="inline-flex h-9 items-center rounded-lg px-2.5 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
-                    >
+                    <Link href={`/syllabus/worksheets/${sheet.id}`} className={inlineEditButtonClass}>
+                        <PenIcon />
                         Edit worksheet
                     </Link>
                 </div>

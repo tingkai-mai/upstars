@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/page-header";
+import { FilterPanel } from "@/components/filter-panel";
 import { Tabs } from "@/components/tabs";
 import type { TestType } from "@/lib/tests";
 import type { Selection } from "./selection";
@@ -28,7 +29,11 @@ export function SyllabusHeader({ tab, selection, canEdit, testType }: Props) {
                     { label: "Tests", href: `/syllabus/tests${query}`, active: tab === "tests" },
                 ]}
             />
-            {selection.subject && <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={selection.subject.id} testType={testType} />}
+            {selection.subject && (
+                <FilterPanel>
+                    <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={selection.subject.id} testType={testType} />
+                </FilterPanel>
+            )}
         </>
     );
 }

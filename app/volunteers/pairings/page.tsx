@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Pairings" };
 
 export default function PairingsPage({ searchParams }: PageProps<"/volunteers/pairings">) {
     return (
-        <Suspense fallback={<p className="text-zinc-500">Loading pairings…</p>}>
+        <Suspense fallback={<p className="text-zinc-600">Loading pairings…</p>}>
             <Pairings searchParams={searchParams} />
         </Suspense>
     );

@@ -71,7 +71,7 @@ export function SaveBar({ summary, error, pending, canSubmit, submitLabel }: Sav
             <div className="mx-auto flex max-w-3xl flex-col gap-2 sm:px-2">
                 <FormError message={error} />
                 <div className="flex items-center gap-3">
-                    <p className="flex-1 text-sm text-zinc-600 dark:text-zinc-400" aria-live="polite">
+                    <p className="flex-1 text-base text-zinc-700 dark:text-zinc-300" aria-live="polite">
                         {summary}
                     </p>
                     <button type="submit" disabled={pending || !canSubmit} className={saveButtonClass}>

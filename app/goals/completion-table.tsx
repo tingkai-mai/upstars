@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 export function CompletionTable({ itemLabel, children }: { itemLabel: string; children: ReactNode }) {
     return (
         <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
-            <table className="w-full border-collapse text-left text-sm">
-                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+            <table className="w-full border-collapse text-left text-base">
+                <thead className="bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
                     <tr>
                         <th scope="col" className="px-3 py-2 font-medium">
                             {itemLabel}

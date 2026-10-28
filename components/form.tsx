@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 const fieldClass =
-    "w-full rounded-xl border border-zinc-300 bg-white px-4 text-base text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-300 dark:focus:ring-zinc-300/20";
+    "w-full rounded-xl border border-zinc-400 bg-white px-4 text-base text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-300 dark:focus:ring-zinc-300/20";
 
 export const inputClass = `h-12 ${fieldClass}`;
 
@@ -21,22 +21,26 @@ export const dangerButtonClass =
     "inline-flex h-12 w-full items-center justify-center rounded-xl border border-red-200 px-5 text-base font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/50";
 
 export const secondaryButtonClass =
-    "inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-zinc-300 px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900";
+    "inline-flex h-11 shrink-0 items-center justify-center rounded-xl border border-zinc-300 px-4 text-base font-medium text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900";
+
+// The main action in a page or section header, e.g. Add goal
+export const compactPrimaryButtonClass =
+    "inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-zinc-900 px-4 text-base font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200";
 
 export const addButtonClass =
-    "flex h-11 w-full items-center justify-center rounded-xl border border-dashed border-zinc-300 text-sm font-medium text-zinc-600 transition hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-50";
+    "flex h-12 w-full items-center justify-center rounded-xl border-2 border-dashed border-zinc-300 text-base font-medium text-zinc-700 transition hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-50";
 
 export const inlineEditButtonClass =
-    "inline-flex h-9 shrink-0 items-center rounded-lg px-2.5 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50";
+    "inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-zinc-100 px-3 text-sm font-medium text-zinc-800 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700";
 
 export function Field({ label, htmlFor, hint, children }: { label: string; htmlFor: string; hint?: string; children: ReactNode }) {
     return (
         <div className="flex flex-col gap-2">
-            <label htmlFor={htmlFor} className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label htmlFor={htmlFor} className="text-base font-medium text-zinc-800 dark:text-zinc-200">
                 {label}
             </label>
             {children}
-            {hint && <p className="text-xs text-zinc-500 dark:text-zinc-400">{hint}</p>}
+            {hint && <p className="text-sm text-zinc-600 dark:text-zinc-400">{hint}</p>}
         </div>
     );
 }

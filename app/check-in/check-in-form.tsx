@@ -1,6 +1,7 @@
 "use client";
 import { useId, useState, useTransition, type ReactNode, type SubmitEvent } from "react";
 import { Field, FormError, inputClass, textareaClass } from "@/components/form";
+import { CheckIcon } from "@/components/icons";
 import { pluralize } from "@/lib/format";
 import type { Chapter } from "@/app/syllabus/queries";
 import { ChapterPicker, DoneTag } from "@/app/syllabus/worksheets/worksheet-builder";
@@ -89,18 +90,9 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
         });
     }
 
-    const tabs: { key: TabKey; label: ReactNode; badge?: number | boolean }[] = [
+    const tabs: { key: TabKey; label: string; badge?: number | boolean }[] = [
         { key: "concepts", label: "Concepts", badge: conceptCount },
-        {
-            key: "worksheets",
-            label: (
-                <>
-                    <span className="sm:hidden">Sheets</span>
-                    <span className="max-sm:hidden">Worksheets</span>
-                </>
-            ),
-            badge: worksheetCount,
-        },
+        { key: "worksheets", label: "Worksheets", badge: worksheetCount },
         { key: "tests", label: "Tests", badge: testCount },
         { key: "rewards", label: "Rewards", badge: Boolean(chosenRewards) },
         { key: "remarks", label: "Remarks", badge: remarks.trim() !== "" },
@@ -118,7 +110,8 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
                 <input id="lessonDate" name="lessonDate" type="date" required max={today} defaultValue={today} className={inputClass} />
             </Field>
 
-            <div role="tablist" aria-label="What was covered" className="grid grid-cols-5 gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-900">
+            {/* Two rows on phones (what was covered, then rewards and remarks), one row on larger screens */}
+            <div role="tablist" aria-label="What was covered" className="grid grid-cols-6 gap-1 rounded-xl bg-zinc-100 p-1 sm:grid-cols-5 dark:bg-zinc-900">
                 {tabs.map((t) => (
                     <button
                         key={t.key}
@@ -128,8 +121,8 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
                         aria-selected={tab === t.key}
                         aria-controls={`${tabsId}-${t.key}`}
                         onClick={() => setTab(t.key)}
-                        className={`relative flex h-11 items-center justify-center rounded-lg px-0.5 text-xs font-medium transition sm:text-sm ${
-                            tab === t.key ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50" : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                        className={`flex h-12 items-center justify-center gap-1.5 rounded-lg px-1 text-sm font-medium transition sm:col-span-1 sm:text-base ${t.key === "rewards" || t.key === "remarks" ? "col-span-3" : "col-span-2"} ${
+                            tab === t.key ? "bg-white font-semibold text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50" : "text-zinc-700 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                         }`}
                     >
                         {t.label}
@@ -162,7 +155,7 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
                     />
                 ))}
                 <p className="flex items-center justify-between rounded-xl bg-zinc-900 px-4 py-3 text-white dark:bg-zinc-50 dark:text-zinc-900">
-                    <span className="text-sm font-medium">Score</span>
+                    <span className="text-base font-medium">Score</span>
                     <span className="text-2xl font-semibold tabular-nums">
                         {score ?? "–"}
                         <span className="text-base font-normal opacity-60">/{MAX_SCORE}</span>
@@ -170,8 +163,8 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
                 </p>
             </TabPanel>
             <TabPanel id={`${tabsId}-remarks`} active={tab === "remarks"}>
-                <label htmlFor="remarks" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    Remarks <span className="font-normal text-zinc-500 dark:text-zinc-400">· required, you can share them on WhatsApp next</span>
+                <label htmlFor="remarks" className="text-base font-medium text-zinc-800 dark:text-zinc-200">
+                    Remarks <span className="font-normal text-zinc-600 dark:text-zinc-400">· required, you can share them on WhatsApp next</span>
                 </label>
                 <textarea
                     id="remarks"
@@ -188,7 +181,7 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
             <div className="sticky bottom-0 -mx-5 -mb-5 flex flex-col gap-3 border-t border-zinc-200 bg-white px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:-mb-6 sm:px-6 sm:pb-6 dark:border-zinc-800 dark:bg-zinc-950">
                 <FormError message={error} />
                 <div className="flex items-center gap-3">
-                    <p className="flex-1 text-xs text-zinc-500 dark:text-zinc-400" aria-live="polite">
+                    <p className="flex-1 text-sm text-zinc-600 dark:text-zinc-400" aria-live="polite">
                         {summary}
                     </p>
                     <button
@@ -204,17 +197,17 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
     );
 }
 
-// In the tab's top-right corner rather than beside the label, so five labels fit across a phone
 function TabBadge({ value }: { value?: number | boolean }) {
     if (!value) return null;
     if (value === true) {
         return (
-            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-emerald-500">
+            <span className="text-emerald-600 dark:text-emerald-400">
+                <CheckIcon />
                 <span className="sr-only">(filled in)</span>
             </span>
         );
     }
-    return <span className="absolute top-0.5 right-0.5 min-w-3.5 rounded-full bg-emerald-600 px-0.5 text-center text-[0.625rem] leading-3.5 font-semibold tabular-nums text-white">{value}</span>;
+    return <span className="min-w-5 rounded-full bg-emerald-600 px-1.5 text-center text-sm leading-5 font-semibold tabular-nums text-white">{value}</span>;
 }
 
 type PointsPickerProps = { name: RewardKey; label: string; value?: number; onChange: (points: number) => void };
@@ -223,7 +216,7 @@ type PointsPickerProps = { name: RewardKey; label: string; value?: number; onCha
 function PointsPicker({ name, label, value, onChange }: PointsPickerProps) {
     return (
         <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">{label}</legend>
+            <legend className="mb-2 text-base font-medium text-zinc-800 dark:text-zinc-200">{label}</legend>
             <div className="grid grid-cols-3 gap-2">
                 {POINT_OPTIONS.map((points) => (
                     <label
@@ -249,7 +242,7 @@ function TabPanel({ id, active, children }: { id: string; active: boolean; child
 }
 
 function EmptyTab({ children }: { children: ReactNode }) {
-    return <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">{children}</p>;
+    return <p className="py-8 text-center text-base text-zinc-600 dark:text-zinc-400">{children}</p>;
 }
 
 type ChecklistProps = { name: string; items: Item[]; selected: Set<string>; onToggle: (ids: string[], checked: boolean) => void; empty: string };
@@ -260,18 +253,18 @@ function ItemChecklist({ name, items, selected, onToggle, empty }: ChecklistProp
         <ul className="flex flex-col rounded-2xl border border-zinc-200 px-3 py-1 dark:border-zinc-800">
             {items.map((item) => (
                 <li key={item.id}>
-                    <label className="flex min-h-12 cursor-pointer items-center gap-3 py-1.5 text-sm text-zinc-800 dark:text-zinc-200">
+                    <label className="flex min-h-12 cursor-pointer items-center gap-3 py-1.5 text-base text-zinc-800 dark:text-zinc-200">
                         <input
                             type="checkbox"
                             name={name}
                             value={item.id}
                             checked={selected.has(item.id)}
                             onChange={(event) => onToggle([item.id], event.target.checked)}
-                            className="size-5 shrink-0 accent-zinc-900 dark:accent-zinc-100"
+                            className="size-6 shrink-0 accent-zinc-900 dark:accent-zinc-100"
                         />
                         <span className="min-w-0 flex-1">
                             {item.name}
-                            {item.detail && <span className="block text-xs text-zinc-500 dark:text-zinc-400">{item.detail}</span>}
+                            {item.detail && <span className="block text-sm text-zinc-600 dark:text-zinc-400">{item.detail}</span>}
                         </span>
                         {item.done && <DoneTag />}
                     </label>

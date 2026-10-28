@@ -1,4 +1,5 @@
 import { TEST_TYPE_LABELS } from "@/lib/tests";
+import { FilterPanel } from "@/components/filter-panel";
 import { getSubjectPlan, listTests, listWorksheets } from "@/app/syllabus/queries";
 import { resolveSelection } from "@/app/syllabus/selection";
 import { SyllabusFilter } from "@/app/syllabus/syllabus-filter";
@@ -25,12 +26,12 @@ export async function CheckInSection({ viewer, params }: { viewer: Viewer; param
     const student = students.find((s) => s.id === params.student) ?? students[0];
 
     return (
-        <section aria-labelledby="check-in-heading" className="flex flex-col gap-4 rounded-3xl border-2 border-zinc-900 p-4 sm:p-6 dark:border-zinc-50">
+        <section aria-labelledby="check-in-heading" className="flex flex-col gap-4 rounded-3xl bg-zinc-100 p-4 sm:p-6 dark:bg-zinc-900">
             <div>
                 <h2 id="check-in-heading" className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
                     Lesson Check-In
                 </h2>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">Record what you covered with a student.</p>
+                <p className="text-base text-zinc-600 dark:text-zinc-400">Record what you covered with a student.</p>
             </div>
             {!student ? (
                 <EmptyState>No students yet. Add one in Volunteer management.</EmptyState>
@@ -66,8 +67,10 @@ async function CheckInContent({ students, student, params }: ContentProps & { pa
 
     return (
         <>
-            {picker}
-            <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={subject.id} />
+            <FilterPanel>
+                {picker}
+                <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={subject.id} />
+            </FilterPanel>
             <CheckInForm
                 // Remount on a new selection, so ticks from one student or subject don't carry over
                 key={`${student.id}-${subject.id}`}

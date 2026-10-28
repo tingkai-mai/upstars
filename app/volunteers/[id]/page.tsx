@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { isAdmin, requireUser } from "@/lib/session";
 import { pluralize } from "@/lib/format";
 import { PageHeader } from "@/components/page-header";
+import { secondaryButtonClass } from "@/components/form";
 import { EmptyState } from "@/app/syllabus/ui";
 import { listStudentGoals } from "@/app/goals/queries";
 import { GoalStatus, Marks } from "@/app/goals/goal-result";
@@ -21,7 +22,7 @@ type Props = PageProps<"/volunteers/[id]">;
 
 export default function UserProfilePage({ params }: Props) {
     return (
-        <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+        <Suspense fallback={<p className="text-zinc-600">Loading…</p>}>
             <UserProfile params={params} />
         </Suspense>
     );
@@ -53,7 +54,7 @@ async function UserProfile({ params }: Pick<Props, "params">) {
                     access.admin && (
                         <Link
                             href={`/volunteers/${id}/edit`}
-                            className="inline-flex h-10 shrink-0 items-center rounded-xl border border-zinc-300 px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                            className={secondaryButtonClass}
                         >
                             Edit
                         </Link>
@@ -69,7 +70,7 @@ async function UserProfile({ params }: Pick<Props, "params">) {
                 </Detail>
                 <Detail label="Role">
                     <RoleBadge role={member.role} />
-                    {id === viewer.id && <span className="ml-2 text-sm text-zinc-500">(you)</span>}
+                    {id === viewer.id && <span className="ml-2 text-sm text-zinc-600">(you)</span>}
                 </Detail>
                 <Detail label="Level">{member.currentLevel ? <span className="text-zinc-900 dark:text-zinc-50">{member.currentLevel}</span> : <span className="text-zinc-400">Not set</span>}</Detail>
             </dl>
@@ -114,7 +115,7 @@ async function StudentProfile({ student, access }: { student: Member; access: Ac
                 action={
                     <Link
                         href={`/goals?student=${student.id}`}
-                        className="inline-flex h-10 shrink-0 items-center rounded-xl border border-zinc-300 px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                        className={secondaryButtonClass}
                     >
                         View progress
                     </Link>
@@ -164,7 +165,7 @@ function ProfileSection({ title, count, action, children }: { title: string; cou
         <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-4">
                 <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                    {title} {count !== undefined && <span className="font-normal text-zinc-500">({count})</span>}
+                    {title} {count !== undefined && <span className="font-normal text-zinc-600 dark:text-zinc-400">({count})</span>}
                 </h2>
                 {action}
             </div>
@@ -175,7 +176,7 @@ function ProfileSection({ title, count, action, children }: { title: string; cou
 
 function ManagePairingsLink({ email }: { email: string }) {
     return (
-        <Link href={`/volunteers/pairings?q=${encodeURIComponent(email)}`} className="text-sm font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-50">
+        <Link href={`/volunteers/pairings?q=${encodeURIComponent(email)}`} className="text-base font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-50">
             Manage pairings
         </Link>
     );
@@ -190,11 +191,11 @@ function PersonList({ people, access }: { people: ListedPerson[]; access: Access
             {people.map((person) => {
                 const content = (
                     <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-zinc-900 dark:text-zinc-50">
+                        <p className="truncate text-lg font-medium text-zinc-900 dark:text-zinc-50">
                             {person.name}
-                            {person.id === access.viewerId && <span className="font-normal text-zinc-500"> (you)</span>}
+                            {person.id === access.viewerId && <span className="font-normal text-zinc-600"> (you)</span>}
                         </p>
-                        <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">{person.detail}</p>
+                        <p className="truncate text-base text-zinc-600 dark:text-zinc-400">{person.detail}</p>
                     </div>
                 );
                 return (
@@ -224,8 +225,8 @@ type GoalResult = Awaited<ReturnType<typeof listStudentGoals>>[number];
 function GoalResults({ goals }: { goals: GoalResult[] }) {
     return (
         <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
-            <table className="w-full border-collapse text-left text-sm">
-                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+            <table className="w-full border-collapse text-left text-base">
+                <thead className="bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
                     <tr>
                         <th scope="col" className="px-3 py-2 font-medium">
                             Goal
@@ -245,7 +246,7 @@ function GoalResults({ goals }: { goals: GoalResult[] }) {
                                 <span className="block font-semibold text-zinc-900 dark:text-zinc-50">
                                     Q{g.quarter} {g.year}
                                 </span>
-                                <span className="block text-xs text-zinc-500 dark:text-zinc-400">
+                                <span className="block text-sm text-zinc-600 dark:text-zinc-400">
                                     {g.level} {g.subject}
                                 </span>
                             </th>
@@ -267,7 +268,7 @@ function GoalResults({ goals }: { goals: GoalResult[] }) {
 function Detail({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
-            <dt className="text-sm text-zinc-500 sm:w-24 dark:text-zinc-400">{label}</dt>
+            <dt className="text-base text-zinc-600 sm:w-24 dark:text-zinc-400">{label}</dt>
             <dd className="flex items-center">{children}</dd>
         </div>
     );

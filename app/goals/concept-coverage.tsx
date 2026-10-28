@@ -33,26 +33,26 @@ export function ConceptCoverage({ conceptName, lessons, completedAt }: Props) {
                 type="button"
                 onClick={() => setOpen(true)}
                 aria-label={`When ${conceptName} was covered`}
-                className="inline-flex h-8 items-center gap-1 rounded-lg bg-emerald-50 px-2 text-xs font-medium whitespace-nowrap text-emerald-800 tabular-nums transition hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-950"
+                className="inline-flex h-9 items-center gap-1 rounded-lg bg-emerald-50 px-2 text-sm font-medium whitespace-nowrap text-emerald-800 tabular-nums transition hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-950"
             >
                 {label}
                 {lessons.length > 1 && <span className="text-emerald-600 dark:text-emerald-400">+{lessons.length - 1}</span>}
             </button>
             {open && (
                 <Modal title={conceptName} onClose={() => setOpen(false)} closeLabel="Close">
-                    <p className="-mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                    <p className="-mt-2 text-base text-zinc-600 dark:text-zinc-400">
                         {lessons.length ? `Covered in ${pluralize(lessons.length, "lesson")}` : "Not covered in a checked-in lesson"}
                         {completedAt && ` · marked done ${formatCompletedOn(completedAt)}`}
                     </p>
                     {lessons.length > 0 && (
                         <ol className="flex flex-col gap-2">
                             {lessons.map((lesson) => (
-                                <li key={lesson.checkInId} className="flex flex-col gap-1 rounded-xl bg-zinc-50 p-3 text-sm dark:bg-zinc-900/60">
+                                <li key={lesson.checkInId} className="flex flex-col gap-2 rounded-xl bg-zinc-50 p-3 text-base dark:bg-zinc-900/60">
                                     <p className="flex flex-wrap justify-between gap-x-3">
                                         <span className="font-semibold text-zinc-900 dark:text-zinc-50">{formatLessonDate(lesson.lessonDate)}</span>
-                                        <span className="text-zinc-500 dark:text-zinc-400">By {lesson.recordedByName ?? "a former user"}</span>
+                                        <span className="text-zinc-600 dark:text-zinc-400">By {lesson.recordedByName ?? "a former user"}</span>
                                     </p>
-                                    <p className="whitespace-pre-line text-zinc-600 italic dark:text-zinc-300">“{lesson.remarks}”</p>
+                                    <p className="whitespace-pre-line border-l-4 border-zinc-300 pl-3 text-zinc-800 dark:border-zinc-700 dark:text-zinc-200">{lesson.remarks}</p>
                                 </li>
                             ))}
                         </ol>

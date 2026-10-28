@@ -50,13 +50,13 @@ export function CheckInActions({ checkIn, pastCheckIns }: { checkIn: ReactNode; 
                 <button
                     type="button"
                     onClick={() => open("past")}
-                    className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-zinc-300 px-5 text-base font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                    className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-zinc-300 bg-white px-5 text-base font-medium text-zinc-800 transition hover:bg-zinc-50 dark:bg-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
                 >
                     Past Check-Ins
                 </button>
             </div>
             {saved && openModal !== "share" && (
-                <p role="status" className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
+                <p role="status" className="rounded-xl bg-emerald-50 px-4 py-3 text-base text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
                     {saved.message}
                 </p>
             )}
@@ -82,7 +82,7 @@ function ShareModal({ initialText, onClose }: { initialText: string; onClose: ()
 
     return (
         <Modal title="Share on WhatsApp" onClose={onClose} closeLabel="Done">
-            <p className="-mt-2 text-sm text-zinc-500 dark:text-zinc-400">Checked in. Share your remarks, e.g. with the student&apos;s parents.</p>
+            <p className="-mt-2 text-base text-zinc-600 dark:text-zinc-400">Checked in. Share your remarks, e.g. with the student&apos;s parents.</p>
             <label htmlFor="share-text" className="sr-only">
                 Message
             </label>

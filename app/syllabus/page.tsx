@@ -4,7 +4,7 @@ import Link from "next/link";
 import { isAdmin, requireUser } from "@/lib/session";
 import { formatMinutes, pluralize } from "@/lib/format";
 import { FormDialog } from "@/components/form-dialog";
-import { CheckIcon, EditListIcon } from "@/components/icons";
+import { CheckIcon, EditListIcon, PenIcon } from "@/components/icons";
 import { addButtonClass, inlineEditButtonClass, secondaryButtonClass } from "@/components/form";
 import { getSubjectPlan, type Chapter, type SubjectPlan, type Week } from "./queries";
 import * as actions from "./actions";
@@ -21,7 +21,7 @@ type Props = PageProps<"/syllabus">;
 export default function SyllabusPage({ searchParams }: Props) {
     return (
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-            <Suspense fallback={<p className="text-zinc-500">Loading syllabus…</p>}>
+            <Suspense fallback={<p className="text-zinc-600">Loading syllabus…</p>}>
                 <SyllabusTab searchParams={searchParams} />
             </Suspense>
         </main>
@@ -43,10 +43,8 @@ async function SyllabusTab({ searchParams }: Pick<Props, "searchParams">) {
                 <EmptyState>No subjects yet.{canEdit && " Use Subjects above to add one."}</EmptyState>
             ) : (
                 <>
-                    <div className="flex items-center justify-between gap-4">
-                        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                            {plan.subject.level} {plan.subject.name}
-                        </h2>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <Summary plan={plan} />
                         {canEdit && (
                             <Link href={`/syllabus?subject=${plan.subject.id}${editing ? "" : "&edit=1"}`} replace scroll={false} className={`${secondaryButtonClass} gap-2`}>
                                 {editing ? <CheckIcon /> : <EditListIcon />}
@@ -56,12 +54,10 @@ async function SyllabusTab({ searchParams }: Pick<Props, "searchParams">) {
                     </div>
 
                     {editing && (
-                        <p className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                        <p className="rounded-2xl bg-amber-50 p-4 text-base text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                             You&apos;re editing chapters, weeks and concepts. Changes save as you go.
                         </p>
                     )}
-
-                    <Summary plan={plan} />
 
                     {plan.chapters.length === 0 && <EmptyState>No chapters yet.{editing ? " Add one below." : ""}</EmptyState>}
                     <section aria-label="Chapters" className="flex flex-col gap-3">
@@ -82,18 +78,21 @@ async function SyllabusTab({ searchParams }: Pick<Props, "searchParams">) {
 
 function Summary({ plan }: { plan: SubjectPlan }) {
     const weeks = plan.chapters.flatMap((c) => c.weeks);
+    const counts = [
+        { noun: "chapter", count: plan.chapters.length },
+        { noun: "week", count: weeks.length },
+        { noun: "concept", count: weeks.reduce((sum, w) => sum + w.concepts.length, 0) },
+    ];
     const stats = [
-        { label: "Chapters", value: String(plan.chapters.length) },
-        { label: "Weeks", value: String(weeks.length) },
-        { label: "Concepts", value: String(weeks.reduce((sum, w) => sum + w.concepts.length, 0)) },
-        { label: "Teaching", value: formatMinutes(weeks.reduce((sum, w) => sum + w.durationMin, 0)) },
+        ...counts.map(({ noun, count }) => ({ label: count === 1 ? noun : `${noun}s`, value: String(count) })),
+        { label: "teaching", value: formatMinutes(weeks.reduce((sum, w) => sum + w.durationMin, 0)) },
     ];
     return (
-        <dl aria-label="Summary" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <dl aria-label="Summary" className="flex flex-wrap gap-x-5 gap-y-1">
             {stats.map((stat) => (
-                <div key={stat.label} className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
-                    <dt className="text-sm text-zinc-500 dark:text-zinc-400">{stat.label}</dt>
-                    <dd className="text-2xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">{stat.value}</dd>
+                <div key={stat.label} className="flex items-baseline gap-1.5">
+                    <dt className="text-base text-zinc-600 dark:text-zinc-400">{stat.label}</dt>
+                    <dd className="order-first text-xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">{stat.value}</dd>
                 </div>
             ))}
         </dl>
@@ -116,7 +115,12 @@ function ChapterTable({ chapter, plan, editing }: { chapter: Chapter; plan: Subj
                 <div className="flex justify-end">
                     <FormDialog
                         title="Edit chapter"
-                        trigger="Edit chapter"
+                        trigger={
+                            <>
+                                <PenIcon />
+                                Edit chapter
+                            </>
+                        }
                         triggerLabel={`Edit chapter ${chapter.name}`}
                         triggerClassName={inlineEditButtonClass}
                         submitLabel="Save chapter"
@@ -135,8 +139,8 @@ function ChapterTable({ chapter, plan, editing }: { chapter: Chapter; plan: Subj
             {chapter.weeks.length === 0 && <EmptyState>This chapter has no weeks yet.</EmptyState>}
             {chapter.weeks.length > 0 && (
                 <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
-                    <table className="w-full border-collapse text-left text-sm">
-                        <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                    <table className="w-full border-collapse text-left text-base">
+                        <thead className="bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
                             <tr>
                                 <th scope="col" className="w-24 px-3 py-2 font-medium sm:w-32">
                                     Week
@@ -175,14 +179,14 @@ function WeekRows({ week, editing, chapterOptions }: { week: Week; editing: bool
 
     const weekCell = (
         <th scope="rowgroup" rowSpan={rowCount} className="border-r border-zinc-200 px-3 py-2.5 align-top font-normal dark:border-zinc-800">
-            <span className="block font-semibold text-zinc-900 dark:text-zinc-50">Week {week.number}</span>
-            <span className="block text-xs text-zinc-500 dark:text-zinc-400">{formatMinutes(week.durationMin)}</span>
+            <span className="block whitespace-nowrap font-semibold text-zinc-900 dark:text-zinc-50">Week {week.number}</span>
+            <span className="block text-sm text-zinc-600 dark:text-zinc-400">{formatMinutes(week.durationMin)}</span>
             {editing && (
                 <FormDialog
                     title={`Edit week ${week.number}`}
-                    trigger="Edit"
+                    trigger={<><PenIcon />Edit</>}
                     triggerLabel={`Edit week ${week.number}`}
-                    triggerClassName={`${inlineEditButtonClass} -ml-2.5 mt-1`}
+                    triggerClassName={`${inlineEditButtonClass} mt-2`}
                     submitLabel="Save week"
                     action={actions.updateWeek.bind(null, week.id)}
                     remove={{
@@ -202,7 +206,7 @@ function WeekRows({ week, editing, chapterOptions }: { week: Week; editing: bool
             {week.concepts.length === 0 && (
                 <tr>
                     {weekCell}
-                    <td className="px-3 py-2.5 text-zinc-500 dark:text-zinc-400">No concepts yet</td>
+                    <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400">No concepts yet</td>
                 </tr>
             )}
             {week.concepts.map((concept, index) => (
@@ -217,7 +221,7 @@ function WeekRows({ week, editing, chapterOptions }: { week: Week; editing: bool
                             {editing && (
                                 <FormDialog
                                     title="Edit concept"
-                                    trigger="Edit"
+                                    trigger={<PenIcon />}
                                     triggerLabel={`Edit concept ${concept.name}`}
                                     triggerClassName={`${inlineEditButtonClass} -my-1.5`}
                                     submitLabel="Save concept"
@@ -238,7 +242,7 @@ function WeekRows({ week, editing, chapterOptions }: { week: Week; editing: bool
                             title={`Add concept to week ${week.number}`}
                             trigger="+ Add concept"
                             triggerLabel={`Add concept to week ${week.number}`}
-                            triggerClassName={addButtonClass.replace("h-11", "h-9")}
+                            triggerClassName={addButtonClass.replace("h-12", "h-10")}
                             submitLabel="Add concept"
                             action={actions.createConcept.bind(null, week.id)}
                         >

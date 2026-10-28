@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { compactPrimaryButtonClass } from "@/components/form";
 import { redirect } from "next/navigation";
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
@@ -19,7 +20,7 @@ type Props = PageProps<"/volunteers">;
 
 export default function VolunteersPage({ searchParams }: Props) {
     return (
-        <Suspense fallback={<p className="text-zinc-500">Loading users…</p>}>
+        <Suspense fallback={<p className="text-zinc-600">Loading users…</p>}>
             <UserList searchParams={searchParams} />
         </Suspense>
     );
@@ -45,13 +46,13 @@ async function UserList({ searchParams }: Pick<Props, "searchParams">) {
             {noticeMessage && <Toast message={noticeMessage} />}
 
             <div className="flex min-h-10 items-center justify-between gap-4">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-base text-zinc-600 dark:text-zinc-400">
                     {users.length} {users.length === 1 ? "user" : "users"}
                 </p>
                 {admin && (
                     <Link
                         href="/volunteers/new"
-                        className="inline-flex h-10 shrink-0 items-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                        className={compactPrimaryButtonClass}
                     >
                         Add user
                     </Link>
@@ -67,11 +68,11 @@ async function UserList({ searchParams }: Pick<Props, "searchParams">) {
                             className="flex min-h-16 items-center gap-3 px-4 py-3 transition hover:bg-zinc-50 active:bg-zinc-100 dark:hover:bg-zinc-900 dark:active:bg-zinc-800"
                         >
                             <div className="min-w-0 flex-1">
-                                <p className="truncate font-medium text-zinc-900 dark:text-zinc-50">
+                                <p className="truncate text-lg font-medium text-zinc-900 dark:text-zinc-50">
                                     {member.name}
-                                    {member.id === viewer.id && <span className="font-normal text-zinc-500"> (you)</span>}
+                                    {member.id === viewer.id && <span className="font-normal text-zinc-600"> (you)</span>}
                                 </p>
-                                <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
+                                <p className="truncate text-base text-zinc-600 dark:text-zinc-400">
                                     {member.email}
                                     {member.currentLevel && ` · ${member.currentLevel}`}
                                 </p>

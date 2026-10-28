@@ -31,10 +31,10 @@ export function Modal({ title, onClose, closeLabel = "Cancel", busy = false, chi
         >
             <div className="flex flex-col gap-5 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:p-6">
                 <div className="flex items-center justify-between gap-4">
-                    <h2 id={titleId} className="text-lg font-semibold">
+                    <h2 id={titleId} className="text-xl font-semibold">
                         {title}
                     </h2>
-                    <button type="button" onClick={() => dialogRef.current?.close()} className="-mr-2 rounded-lg px-2 py-1 text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50">
+                    <button type="button" onClick={() => dialogRef.current?.close()} className="inline-flex h-10 shrink-0 items-center rounded-lg bg-zinc-100 px-3 text-base font-medium text-zinc-800 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700">
                         {closeLabel}
                     </button>
                 </div>

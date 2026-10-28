@@ -70,7 +70,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         <div className="flex flex-col gap-8">
             <header className="flex flex-col gap-2">
                 <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{copy.title}</h1>
-                <p className="text-base text-zinc-500 dark:text-zinc-400">{copy.subtitle}</p>
+                <p className="text-base text-zinc-600 dark:text-zinc-400">{copy.subtitle}</p>
             </header>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -109,7 +109,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                             type="button"
                             onClick={() => setShowPassword((shown) => !shown)}
                             aria-pressed={showPassword}
-                            className="absolute inset-y-0 right-0 px-4 text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                            className="absolute inset-y-0 right-0 px-4 text-base font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                         >
                             {showPassword ? "Hide" : "Show"}
                         </button>
@@ -127,7 +127,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                 </button>
             </form>
 
-            <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-center text-base text-zinc-600 dark:text-zinc-400">
                 {copy.switchPrompt}{" "}
                 <Link href={copy.switchHref} replace className="font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-50">
                     {copy.switchLabel}

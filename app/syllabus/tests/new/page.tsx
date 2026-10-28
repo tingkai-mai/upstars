@@ -17,7 +17,7 @@ type Props = PageProps<"/syllabus/tests/new">;
 export default function NewTestPage({ searchParams }: Props) {
     return (
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 pt-6 pb-36 sm:px-6 sm:pt-10">
-            <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+            <Suspense fallback={<p className="text-zinc-600">Loading…</p>}>
                 <NewTest searchParams={searchParams} />
             </Suspense>
         </main>
@@ -39,7 +39,7 @@ async function NewTest({ searchParams }: Pick<Props, "searchParams">) {
                 <EmptyState>Add a subject first, using Manage subjects.</EmptyState>
             ) : (
                 <>
-                    <p className="-mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+                    <p className="-mt-3 text-sm text-zinc-600 dark:text-zinc-400">
                         For {plan.subject.level} {plan.subject.name}. Choose the chapters it covers.
                     </p>
                     <TestBuilder chapters={plan.chapters} defaults={{ name: "", type, chapterIds: [] }} action={createTest.bind(null, plan.subject.id)} submitLabel="Create test" listHref={`/syllabus/tests?subject=${plan.subject.id}`} />

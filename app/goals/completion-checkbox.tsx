@@ -2,7 +2,7 @@
 import { useOptimistic, useTransition } from "react";
 import { setCompletion, setConceptsCompletion, type CompletionKind } from "./actions";
 
-const checkboxClass = "size-5 shrink-0 cursor-pointer accent-emerald-600 disabled:cursor-default disabled:opacity-100";
+const checkboxClass = "size-6 shrink-0 cursor-pointer accent-emerald-600 disabled:cursor-default disabled:opacity-100";
 
 type Props = { kind: CompletionKind; studentId: string; itemId: string; done: boolean; label: string; editable: boolean };
 

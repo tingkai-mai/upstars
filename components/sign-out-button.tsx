@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { secondaryButtonClass } from "@/components/form";
 
 export function SignOutButton() {
     const [pending, setPending] = useState(false);
@@ -17,7 +18,7 @@ export function SignOutButton() {
         <button
             onClick={signOut}
             disabled={pending}
-            className="h-10 rounded-xl border border-zinc-300 px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className={`${secondaryButtonClass} disabled:opacity-60`}
         >
             {pending ? "Signing out…" : "Sign out"}
         </button>

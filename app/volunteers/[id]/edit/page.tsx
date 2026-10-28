@@ -15,7 +15,7 @@ type Props = PageProps<"/volunteers/[id]/edit">;
 
 export default function EditUserPage({ params }: Props) {
     return (
-        <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+        <Suspense fallback={<p className="text-zinc-600">Loading…</p>}>
             <EditUser params={params} />
         </Suspense>
     );

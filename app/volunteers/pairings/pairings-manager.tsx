@@ -1,7 +1,7 @@
 "use client";
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { Field, FormError, inputClass, selectClass, selectStyle } from "@/components/form";
+import { compactPrimaryButtonClass, Field, FormError, inputClass, selectClass, selectStyle } from "@/components/form";
 import { FormDialog } from "@/components/form-dialog";
 import { createPairing, removePairing, type PairingState } from "../actions";
 import type { Pairing, Person } from "../queries";
@@ -13,13 +13,13 @@ export function NewPairingButton({ tutors, students }: { tutors: Person[]; stude
             title="New pairing"
             trigger="New pairing"
             triggerLabel="New pairing"
-            triggerClassName="inline-flex h-10 shrink-0 items-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            triggerClassName={compactPrimaryButtonClass}
             submitLabel="Add pairing"
             action={createPairing.bind(null, {})}
         >
             <PersonSelect label="Tutor" name="tutorId" people={tutors} emptyLabel="No tutors yet" />
             <PersonSelect label="Student" name="studentId" people={students} emptyLabel="Every student already has a tutor" />
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 Each student has one main tutor, so students who already have one aren&apos;t listed.{" "}
                 <Link href="/volunteers/new" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-50">
                     Add a user
@@ -73,13 +73,13 @@ export function PairingList({ pairings, initialQuery, canEdit }: { pairings: Pai
                     autoComplete="off"
                     className={inputClass}
                 />
-                <p className="text-sm text-zinc-500 dark:text-zinc-400" aria-live="polite">
+                <p className="text-base text-zinc-600 dark:text-zinc-400" aria-live="polite">
                     {normalized ? `${visible.length} of ${pairings.length} pairings` : `${pairings.length} ${pairings.length === 1 ? "pairing" : "pairings"}`}
                 </p>
             </div>
 
             {visible.length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+                <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-center text-base text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
                     {pairings.length === 0 ? `No pairings yet.${canEdit ? " Add one with New pairing." : ""}` : "No pairings match your filter."}
                 </p>
             ) : (
@@ -114,7 +114,7 @@ function PairingRow({ pairing, canEdit }: { pairing: Pairing; canEdit: boolean }
                         <button
                             type="submit"
                             disabled={pending}
-                            className="h-10 shrink-0 rounded-xl px-3 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950/50"
+                            className="h-11 shrink-0 rounded-xl px-3 text-base font-medium text-red-700 transition hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950/50"
                         >
                             {pending ? "Removing…" : "Remove"}
                         </button>
@@ -129,7 +129,7 @@ function PairingRow({ pairing, canEdit }: { pairing: Pairing; canEdit: boolean }
 function PersonCell({ role, person }: { role: string; person: Person }) {
     return (
         <div className="min-w-0">
-            <dt className="text-xs font-medium uppercase tracking-wide text-zinc-400">{role}</dt>
+            <dt className="text-sm font-medium text-zinc-600">{role}</dt>
             <dd className="truncate">
                 <Link href={`/volunteers/${person.id}`} className="font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-50">
                     {person.name}

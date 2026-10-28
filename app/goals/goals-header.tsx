@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/page-header";
+import { FilterPanel } from "@/components/filter-panel";
 import { Tabs } from "@/components/tabs";
 import { pluralize } from "@/lib/format";
 import { SyllabusFilter } from "@/app/syllabus/syllabus-filter";
@@ -28,13 +29,14 @@ export function GoalsHeader({ tab, progress }: { tab: GoalsTab; progress: Progre
             ) : (
                 <>
                     {/* Students only ever see themselves, so they get a heading rather than a picker */}
-                    {viewer.role === "student" ? (
-                        <p className="-mt-3 text-sm text-zinc-500 dark:text-zinc-400">Your progress</p>
-                    ) : (
-                        <StudentFilter students={students} studentId={student.id} />
-                    )}
-                    {selection.subject && <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={selection.subject.id} />}
+                    {viewer.role === "student" && <p className="-mt-3 text-base text-zinc-600 dark:text-zinc-400">Your progress</p>}
                     <Tabs label="Goal tracking" tabs={TABS.map((t) => ({ label: t.label, href: `${t.path}?${query}`, active: t.key === tab }))} />
+                    {(viewer.role !== "student" || selection.subject) && (
+                        <FilterPanel>
+                            {viewer.role !== "student" && <StudentFilter students={students} studentId={student.id} />}
+                            {selection.subject && <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={selection.subject.id} />}
+                        </FilterPanel>
+                    )}
                     {!data ? <EmptyState>No subjects yet.</EmptyState> : <ProgressSummary data={data} />}
                 </>
             )}
@@ -56,26 +58,26 @@ function ProgressSummary({ data }: { data: ProgressData }) {
 
     return (
         <section aria-label="Progress" className="flex flex-col gap-2">
-            <dl className="grid grid-cols-3 gap-2 sm:gap-3">
+            <dl className="grid grid-cols-3 divide-x divide-zinc-200 rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
                 {tiles.map((tile) => (
-                    <div key={tile.label} className="flex flex-col gap-2 rounded-2xl border border-zinc-200 p-3 sm:p-4 dark:border-zinc-800">
-                        <dt className="text-xs text-zinc-500 sm:text-sm dark:text-zinc-400">{tile.label}</dt>
+                    <div key={tile.label} className="flex flex-col gap-2 p-3 sm:p-4">
+                        <dt className="text-sm text-zinc-600 sm:text-base dark:text-zinc-400">{tile.label}</dt>
                         <dd className="flex flex-col gap-2">
                             <span className="text-xl font-semibold tabular-nums text-zinc-900 sm:text-2xl dark:text-zinc-50">{percent(tile.done, tile.total)}%</span>
                             <ProgressBar value={percent(tile.done, tile.total)} />
-                            <span className="text-xs text-zinc-500 dark:text-zinc-400">{tile.detail(tile.done, tile.total)}</span>
+                            <span className="text-sm text-zinc-600 dark:text-zinc-400">{tile.detail(tile.done, tile.total)}</span>
                         </dd>
                     </div>
                 ))}
             </dl>
-            {!data.canEdit && <p className="text-xs text-zinc-500 dark:text-zinc-400">View only. Admins and this student&apos;s tutors can update progress.</p>}
+            {!data.canEdit && <p className="text-sm text-zinc-600 dark:text-zinc-400">View only. Admins and this student&apos;s tutors can update progress.</p>}
         </section>
     );
 }
 
 export function ProgressBar({ value, label }: { value: number; label?: string }) {
     return (
-        <div role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100} aria-label={label} className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+        <div role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100} aria-label={label} className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
             <div className="h-full rounded-full bg-emerald-500 transition-[width]" style={{ width: `${value}%` }} />
         </div>
     );

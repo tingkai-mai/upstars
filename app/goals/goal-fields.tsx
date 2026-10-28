@@ -34,7 +34,7 @@ export function GoalFields({ defaults, now }: { defaults?: Goal; now: { year: nu
                 <MarksInput name="targetMarks" label="Target" defaultValue={defaults?.targetMarks} />
                 <MarksInput name="actualMarks" label="Actual" defaultValue={defaults?.actualMarks} required={false} hint="Leave blank until known." />
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">One goal per quarter: Jan–Mar is Q1, Apr–Jun Q2, Jul–Sep Q3, Oct–Dec Q4.</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">One goal per quarter: Jan–Mar is Q1, Apr–Jun Q2, Jul–Sep Q3, Oct–Dec Q4.</p>
         </>
     );
 }

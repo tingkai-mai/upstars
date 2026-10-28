@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useTransition, type SubmitEvent } from "react";
 import { useRouter } from "next/navigation";
-import { FormError, inputClass, secondaryButtonClass, selectClass, selectStyle } from "@/components/form";
+import { compactPrimaryButtonClass, FormError, inputClass, inlineEditButtonClass, secondaryButtonClass, selectClass, selectStyle } from "@/components/form";
 import { PenIcon } from "@/components/icons";
 import { Modal } from "@/components/modal";
 import { pluralize } from "@/lib/format";
@@ -9,9 +9,7 @@ import { createSubject, deleteSubject, updateSubject } from "./actions";
 
 type Subject = { id: string; level: string; name: string; weekCount: number };
 
-const smallPrimaryClass =
-    "inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200";
-const smallInputClass = inputClass.replace("h-12", "h-10").replace("text-base", "text-sm");
+const smallInputClass = inputClass.replace("h-12", "h-11");
 
 export function ManageSubjects({ subjects }: { subjects: Subject[] }) {
     const [open, setOpen] = useState(false);
@@ -44,10 +42,10 @@ function SubjectsModal({ subjects, onClose }: { subjects: Subject[]; onClose: ()
         <Modal title="Levels & subjects" onClose={onClose} closeLabel="Close">
 
             <div className="-mx-5 flex max-h-[50dvh] flex-col gap-5 overflow-y-auto px-5 sm:-mx-6 sm:px-6">
-                {levels.length === 0 && <p className="text-sm text-zinc-500 dark:text-zinc-400">No subjects yet. Add the first one below.</p>}
+                {levels.length === 0 && <p className="text-sm text-zinc-600 dark:text-zinc-400">No subjects yet. Add the first one below.</p>}
                 {levels.map((level) => (
                     <section key={level} className="flex flex-col gap-2">
-                        <h3 className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{level}</h3>
+                        <h3 className="text-base font-semibold text-zinc-800 dark:text-zinc-300">{level}</h3>
                         <ul className="divide-y divide-zinc-200 overflow-hidden rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
                             {subjects
                                 .filter((s) => s.level === level)
@@ -58,13 +56,13 @@ function SubjectsModal({ subjects, onClose }: { subjects: Subject[]; onClose: ()
                                         <li key={s.id} className="flex items-center gap-2 px-3 py-2">
                                             <button type="button" onClick={() => openSubject(s.id)} className="min-w-0 flex-1 rounded-lg px-1 py-1 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900">
                                                 <span className="block truncate font-medium">{s.name}</span>
-                                                <span className="block text-xs text-zinc-500 dark:text-zinc-400">{pluralize(s.weekCount, "week")}</span>
+                                                <span className="block text-sm text-zinc-600 dark:text-zinc-400">{pluralize(s.weekCount, "week")}</span>
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setEditingId(s.id)}
                                                 aria-label={`Edit ${s.level} ${s.name}`}
-                                                className="inline-flex h-9 shrink-0 items-center rounded-lg px-2.5 text-sm font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+                                                className={inlineEditButtonClass}
                                             >
                                                 Edit
                                             </button>
@@ -134,7 +132,7 @@ function LevelPicker({ levels, defaultLevel }: { levels: string[]; defaultLevel?
             aria-label="Level"
             value={level}
             onChange={(event) => (event.target.value === NEW_LEVEL ? setTyping(true) : setLevel(event.target.value))}
-            className={selectClass.replace("h-12", "h-10").replace("text-base", "text-sm")}
+            className={selectClass.replace("h-12", "h-11")}
             style={selectStyle}
         >
             {levels.map((option) => (
@@ -161,10 +159,10 @@ function AddSubjectForm({ levels }: { levels: string[] }) {
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
-            <h3 className="text-sm font-medium">Add subject</h3>
+            <h3 className="text-base font-semibold">Add subject</h3>
             <SubjectInputs key={added.count} levels={levels} defaults={added.level ? { level: added.level, name: "" } : undefined} />
             <FormError message={error} />
-            <button type="submit" disabled={pending} className={smallPrimaryClass}>
+            <button type="submit" disabled={pending} className={compactPrimaryButtonClass}>
                 {pending ? "Adding…" : "Add subject"}
             </button>
         </form>
@@ -191,13 +189,13 @@ function EditSubjectRow({ subject, levels, onDone }: { subject: Subject; levels:
                 <SubjectInputs levels={levels} defaults={subject} />
                 <FormError message={error} />
                 <div className="flex flex-wrap items-center gap-2">
-                    <button type="submit" disabled={pending} className={smallPrimaryClass}>
+                    <button type="submit" disabled={pending} className={compactPrimaryButtonClass}>
                         {pending ? "Saving…" : "Save"}
                     </button>
                     <button type="button" onClick={onDone} disabled={pending} className={secondaryButtonClass}>
                         Cancel
                     </button>
-                    <button type="button" onClick={handleDelete} disabled={pending} className="ml-auto inline-flex h-10 items-center rounded-xl px-3 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950/50">
+                    <button type="button" onClick={handleDelete} disabled={pending} className="ml-auto inline-flex h-11 items-center rounded-xl px-3 text-base font-medium text-red-700 hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950/50">
                         Delete
                     </button>
                 </div>

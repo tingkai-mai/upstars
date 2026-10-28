@@ -61,7 +61,7 @@ export function OnboardingGuide({ pages, seenIn, seen, userId }: Props) {
             </button>
             {open && (
                 <Modal title={current.title} onClose={close} closeLabel="Skip">
-                    <div className="flex min-h-48 flex-col gap-3 text-base text-zinc-700 dark:text-zinc-300">
+                    <div className="flex min-h-48 flex-col gap-3 text-lg text-zinc-800 dark:text-zinc-300">
                         {current.blocks.map((block, index) => (
                             <Block key={index} block={block} />
                         ))}
@@ -69,7 +69,7 @@ export function OnboardingGuide({ pages, seenIn, seen, userId }: Props) {
 
                     <div className="flex items-center justify-center gap-1.5" aria-label={`Page ${page + 1} of ${pages.length}`} role="img">
                         {pages.map((_, index) => (
-                            <span key={index} className={`size-1.5 rounded-full ${index === page ? "bg-zinc-900 dark:bg-zinc-50" : "bg-zinc-300 dark:bg-zinc-700"}`} />
+                            <span key={index} className={`size-2.5 rounded-full ${index === page ? "bg-zinc-900 dark:bg-zinc-50" : "bg-zinc-300 dark:bg-zinc-700"}`} />
                         ))}
                     </div>
 

@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+/* A clear, consistent focus outline for keyboard users. In the base layer so a component's own focus style wins. */
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--color-sky-600);
+    outline-offset: 2px;
+  }
+}
