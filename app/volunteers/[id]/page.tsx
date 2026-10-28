@@ -6,9 +6,10 @@ import { isAdmin, requireUser } from "@/lib/session";
 import { pluralize } from "@/lib/format";
 import { PageHeader } from "@/components/page-header";
 import { secondaryButtonClass } from "@/components/form";
+import { ChevronRightIcon, MailIcon, PenIcon } from "@/components/icons";
 import { EmptyState } from "@/app/syllabus/ui";
 import { listStudentGoals } from "@/app/goals/queries";
-import { GoalStatus, Marks } from "@/app/goals/goal-result";
+import { GoalStatus } from "@/app/goals/goal-result";
 import { formatLessonDate } from "@/app/check-in/dates";
 import { listLessonPartners, listPastCheckIns, type LessonPartner } from "@/app/check-in/queries";
 import { PastCheckInsCarousel } from "@/app/check-in/past-check-ins-carousel";
@@ -43,37 +44,38 @@ async function UserProfile({ params }: Pick<Props, "params">) {
     if (!member) notFound();
     if (member.role === "admin") redirect("/volunteers?notice=admin-profile");
 
+    const isSelf = id === viewer.id;
     const access: Access = { viewerId: viewer.id, admin: isAdmin(viewer), canOpenProfiles: viewer.role !== "student" };
 
     return (
         <>
             <PageHeader
-                title={member.name}
+                title={isSelf ? "My profile" : member.name}
+                subtitle={
+                    <span className="flex flex-wrap items-center gap-2">
+                        {isSelf && <span className="font-medium text-zinc-900 dark:text-zinc-50">{member.name}</span>}
+                        <RoleBadge role={member.role} />
+                        {member.currentLevel ?? "Level not set"}
+                    </span>
+                }
                 back={access.canOpenProfiles ? { href: "/volunteers", label: "Users" } : { href: "/", label: "Home" }}
                 action={
                     access.admin && (
-                        <Link
-                            href={`/volunteers/${id}/edit`}
-                            className={secondaryButtonClass}
-                        >
-                            Edit
+                        <Link href={`/volunteers/${id}/edit`} className={`${secondaryButtonClass} gap-2`}>
+                            <PenIcon />
+                            Edit details
                         </Link>
                     )
                 }
             />
 
-            <dl className="divide-y divide-zinc-200 rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-                <Detail label="Email">
-                    <a href={`mailto:${member.email}`} className="break-all text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-50">
-                        {member.email}
-                    </a>
-                </Detail>
-                <Detail label="Role">
-                    <RoleBadge role={member.role} />
-                    {id === viewer.id && <span className="ml-2 text-sm text-zinc-600">(you)</span>}
-                </Detail>
-                <Detail label="Level">{member.currentLevel ? <span className="text-zinc-900 dark:text-zinc-50">{member.currentLevel}</span> : <span className="text-zinc-400">Not set</span>}</Detail>
-            </dl>
+            <a
+                href={`mailto:${member.email}`}
+                className="flex min-h-14 items-center gap-3 rounded-2xl border border-zinc-200 px-4 py-3 text-base text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-50 dark:hover:bg-zinc-900"
+            >
+                <MailIcon />
+                <span className="min-w-0 flex-1 break-all">{member.email}</span>
+            </a>
 
             {member.role === "student" ? <StudentProfile student={member} access={access} /> : <TutorProfile tutor={member} access={access} />}
         </>
@@ -93,7 +95,7 @@ async function StudentProfile({ student, access }: { student: Member; access: Ac
 
     return (
         <>
-            <ProfileSection title="Main tutor" action={access.admin && <ManagePairingsLink email={student.email} />}>
+            <ProfileSection title="Main tutor" action={access.admin && <ManagePairingsLink email={student.email} label="Change tutor" />}>
                 {mainTutor ? (
                     <PersonList people={[{ ...mainTutor, role: "tutor", detail: mainTutor.email }]} access={access} />
                 ) : (
@@ -138,7 +140,7 @@ async function TutorProfile({ tutor, access }: { tutor: Member; access: Access }
 
     return (
         <>
-            <ProfileSection title={tutees.length > 1 ? "Main tutees" : "Main tutee"} action={access.admin && <ManagePairingsLink email={tutor.email} />}>
+            <ProfileSection title={tutees.length > 1 ? "Main tutees" : "Main tutee"} action={access.admin && <ManagePairingsLink email={tutor.email} label="Change students" />}>
                 {tutees.length ? (
                     <PersonList people={tutees.map((t) => ({ ...t, role: "student", detail: t.email }))} access={access} />
                 ) : (
@@ -174,10 +176,10 @@ function ProfileSection({ title, count, action, children }: { title: string; cou
     );
 }
 
-function ManagePairingsLink({ email }: { email: string }) {
+function ManagePairingsLink({ email, label }: { email: string; label: string }) {
     return (
-        <Link href={`/volunteers/pairings?q=${encodeURIComponent(email)}`} className="text-base font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-50">
-            Manage pairings
+        <Link href={`/volunteers/pairings?q=${encodeURIComponent(email)}`} className={secondaryButtonClass}>
+            {label}
         </Link>
     );
 }
@@ -206,8 +208,8 @@ function PersonList({ people, access }: { people: ListedPerson[]; access: Access
                                 className="flex min-h-16 items-center gap-3 px-4 py-3 transition hover:bg-zinc-50 active:bg-zinc-100 dark:hover:bg-zinc-900 dark:active:bg-zinc-800"
                             >
                                 {content}
-                                <span aria-hidden className="text-zinc-400">
-                                    ›
+                                <span className="text-zinc-500 dark:text-zinc-400">
+                                    <ChevronRightIcon />
                                 </span>
                             </Link>
                         ) : (
@@ -224,52 +226,26 @@ type GoalResult = Awaited<ReturnType<typeof listStudentGoals>>[number];
 
 function GoalResults({ goals }: { goals: GoalResult[] }) {
     return (
-        <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
-            <table className="w-full border-collapse text-left text-base">
-                <thead className="bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-                    <tr>
-                        <th scope="col" className="px-3 py-2 font-medium">
-                            Goal
-                        </th>
-                        <th scope="col" className="px-3 py-2 font-medium">
-                            Target
-                        </th>
-                        <th scope="col" className="px-3 py-2 font-medium">
-                            Actual
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {goals.map((g) => (
-                        <tr key={g.id} className="border-t border-zinc-200 align-top dark:border-zinc-800">
-                            <th scope="row" className="px-3 py-3 font-normal">
-                                <span className="block font-semibold text-zinc-900 dark:text-zinc-50">
-                                    Q{g.quarter} {g.year}
-                                </span>
-                                <span className="block text-sm text-zinc-600 dark:text-zinc-400">
-                                    {g.level} {g.subject}
-                                </span>
-                            </th>
-                            <td className="px-3 py-3">
-                                <Marks marks={g.targetMarks} total={g.totalMarks} />
-                            </td>
-                            <td className="px-3 py-3">
-                                {g.actualMarks === null ? <span className="block text-zinc-400">—</span> : <Marks marks={g.actualMarks} total={g.totalMarks} />}
-                                <GoalStatus goal={g} />
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-}
-
-function Detail({ label, children }: { label: string; children: ReactNode }) {
-    return (
-        <div className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
-            <dt className="text-base text-zinc-600 sm:w-24 dark:text-zinc-400">{label}</dt>
-            <dd className="flex items-center">{children}</dd>
-        </div>
+        <ul className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+            {goals.map((g) => (
+                <li key={g.id} className="flex flex-col gap-2 px-4 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                        <p>
+                            <span className="block text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                                Q{g.quarter} {g.year}
+                            </span>
+                            <span className="block text-base text-zinc-600 dark:text-zinc-400">
+                                {g.level} {g.subject}
+                            </span>
+                        </p>
+                        <GoalStatus goal={g} />
+                    </div>
+                    <p className="text-base text-zinc-800 dark:text-zinc-200">
+                        Target <span className="font-semibold tabular-nums">{g.targetMarks}/{g.totalMarks}</span>
+                        {" · "}Result <span className="font-semibold tabular-nums">{g.actualMarks === null ? "not yet" : `${g.actualMarks}/${g.totalMarks}`}</span>
+                    </p>
+                </li>
+            ))}
+        </ul>
     );
 }

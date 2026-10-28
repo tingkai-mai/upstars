@@ -62,17 +62,25 @@ export function NameAndTimeFields({ noun, namePlaceholder, timeHint, defaults }:
 const saveButtonClass =
     "inline-flex h-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 px-6 text-base font-medium text-white transition hover:bg-zinc-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200";
 
-type SaveBarProps = { summary: ReactNode; error?: string; pending: boolean; canSubmit: boolean; submitLabel: string };
+type SaveBarProps = {
+    summary: ReactNode;
+    error?: string;
+    pending: boolean;
+    canSubmit: boolean;
+    /** Shown instead of the summary while saving is disabled, saying what's missing */
+    disabledHint: string;
+    submitLabel: string;
+};
 
 /** Fixed to the bottom so Save and the running count stay reachable while scrolling. Pages using it add bottom padding. */
-export function SaveBar({ summary, error, pending, canSubmit, submitLabel }: SaveBarProps) {
+export function SaveBar({ summary, error, pending, canSubmit, disabledHint, submitLabel }: SaveBarProps) {
     return (
         <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
             <div className="mx-auto flex max-w-3xl flex-col gap-2 sm:px-2">
                 <FormError message={error} />
                 <div className="flex items-center gap-3">
                     <p className="flex-1 text-base text-zinc-700 dark:text-zinc-300" aria-live="polite">
-                        {summary}
+                        {canSubmit ? summary : <span className="font-medium text-amber-800 dark:text-amber-300">{disabledHint}</span>}
                     </p>
                     <button type="submit" disabled={pending || !canSubmit} className={saveButtonClass}>
                         {pending ? "Saving…" : submitLabel}

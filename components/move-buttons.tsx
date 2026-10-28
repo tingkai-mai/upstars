@@ -2,7 +2,7 @@
 import { useTransition } from "react";
 
 const buttonClass =
-    "inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:pointer-events-none disabled:opacity-30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50";
+    "inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:pointer-events-none disabled:opacity-30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50";
 
 type Props = {
     /** A Server Action bound to the item, e.g. moveConcept.bind(null, id) */

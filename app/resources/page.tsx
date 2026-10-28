@@ -76,30 +76,35 @@ type RowProps = { resource: Resource; admin: boolean; isFirst: boolean; isLast: 
 
 function ResourceRow({ resource, admin, isFirst, isLast }: RowProps) {
     return (
-        <li className="flex items-center gap-1 pr-2">
+        <li className="flex flex-col">
             {/* The whole row opens the link; URLs are checked to be http(s) when saved */}
             <a
                 href={resource.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex min-h-16 min-w-0 flex-1 items-center gap-3 py-3 pl-4 transition hover:bg-zinc-50 active:bg-zinc-100 dark:hover:bg-zinc-900 dark:active:bg-zinc-800"
+                className="flex min-h-16 items-center gap-3 px-4 py-3 transition hover:bg-zinc-50 active:bg-zinc-100 dark:hover:bg-zinc-900 dark:active:bg-zinc-800"
             >
                 <div className="min-w-0 flex-1">
                     <p className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{resource.name}</p>
                     {resource.description && <p className="text-base text-zinc-700 dark:text-zinc-300">{resource.description}</p>}
-                    <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">{displayHost(resource.url)}</p>
+                    <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">{displayHost(resource.url)} · opens in a new tab</p>
                 </div>
-                <span aria-hidden className="shrink-0 pr-2 text-zinc-400">
+                <span aria-hidden className="shrink-0 text-xl text-zinc-600 dark:text-zinc-400">
                     ↗
                 </span>
-                <span className="sr-only">(opens in a new tab)</span>
             </a>
             {admin && (
-                <>
+                // A row of their own, so the link keeps the full width
+                <div className="flex items-center justify-end gap-1 px-3 pb-3">
                     <MoveButtons action={moveResource.bind(null, resource.id)} name={resource.name} isFirst={isFirst} isLast={isLast} />
                     <FormDialog
                         title="Edit resource"
-                        trigger={<PenIcon />}
+                        trigger={
+                            <>
+                                <PenIcon />
+                                Edit
+                            </>
+                        }
                         triggerLabel={`Edit ${resource.name}`}
                         triggerClassName={inlineEditButtonClass}
                         submitLabel="Save resource"
@@ -108,7 +113,7 @@ function ResourceRow({ resource, admin, isFirst, isLast }: RowProps) {
                     >
                         <ResourceFields defaults={resource} />
                     </FormDialog>
-                </>
+                </div>
             )}
         </li>
     );

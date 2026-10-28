@@ -40,7 +40,7 @@ export function WorksheetBuilder({ chapters, defaults, action, submitLabel, done
                 ))}
             </fieldset>
 
-            <SaveBar summary={`${pluralize(selected.size, "concept")} selected`} error={error} pending={pending} canSubmit={selected.size > 0} submitLabel={submitLabel} />
+            <SaveBar summary={`${pluralize(selected.size, "concept")} selected`} error={error} pending={pending} canSubmit={selected.size > 0} disabledHint="Tick at least one concept to save." submitLabel={submitLabel} />
         </form>
     );
 }
@@ -67,13 +67,13 @@ export function ChapterPicker({ chapter, selected, onToggle, doneIds, defaultOpe
             <summary className="flex cursor-pointer list-none items-center gap-3 rounded-2xl p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 [&::-webkit-details-marker]:hidden">
                 <span className="min-w-0 flex-1 text-lg font-semibold text-zinc-900 dark:text-zinc-50">{chapter.name}</span>
                 <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-sm font-medium tabular-nums ${count ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900" : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"}`}>
-                    {count}/{ids.length}
+                    {count} of {ids.length}
                 </span>
                 <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.75} className="size-5 shrink-0 text-zinc-600 transition group-open/picker:rotate-180 dark:text-zinc-400">
                     <path d="m6 8 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
             </summary>
-            <div className="flex flex-col gap-3 border-t border-zinc-200 p-3 dark:border-zinc-800">
+            <div className="flex flex-col gap-2 border-t border-zinc-200 p-2 sm:p-3 dark:border-zinc-800">
                 {chapter.weeks
                     .filter((w) => w.concepts.length > 0)
                     .map((week) => {
@@ -81,7 +81,7 @@ export function ChapterPicker({ chapter, selected, onToggle, doneIds, defaultOpe
                         const weekCount = weekIds.filter((id) => selected.has(id)).length;
                         const allChecked = weekCount === weekIds.length;
                         return (
-                            <div key={week.id} className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900/60">
+                            <div key={week.id} className="rounded-xl bg-zinc-50 p-2 sm:p-3 dark:bg-zinc-900/60">
                                 <label className="flex min-h-12 cursor-pointer items-center gap-3 text-base font-semibold text-zinc-900 dark:text-zinc-50">
                                     <input
                                         type="checkbox"
@@ -93,13 +93,13 @@ export function ChapterPicker({ chapter, selected, onToggle, doneIds, defaultOpe
                                         onChange={(event) => onToggle(weekIds, event.target.checked)}
                                         className="size-6 shrink-0 accent-zinc-900 dark:accent-zinc-100"
                                     />
-                                    Week {week.number}{" "}
-                                    <span className="font-normal text-zinc-600 dark:text-zinc-400">· Select all</span>
+                                    Week {week.number}
+                                    <span className="font-normal text-zinc-600 dark:text-zinc-400">· tick all</span>
                                 </label>
                                 <ul className="flex flex-col">
                                     {week.concepts.map((concept) => (
                                         <li key={concept.id}>
-                                            <label className="flex min-h-12 cursor-pointer items-center gap-3 py-1 pl-9 text-base text-zinc-800 dark:text-zinc-200">
+                                            <label className="flex min-h-12 cursor-pointer items-center gap-3 py-1 pl-6 text-base text-zinc-800 dark:text-zinc-200">
                                                 <input
                                                     type="checkbox"
                                                     name="conceptId"

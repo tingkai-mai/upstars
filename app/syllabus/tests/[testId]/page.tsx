@@ -48,7 +48,8 @@ async function EditTest({ params }: Pick<Props, "params">) {
                 listHref={`/syllabus/tests?subject=${found.subjectId}`}
             />
             <section className="mt-4 flex flex-col gap-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-                <h2 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Danger zone</h2>
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Delete this test</h2>
+                <p className="text-base text-zinc-600 dark:text-zinc-400">This can&apos;t be undone.</p>
                 <DeleteButton action={deleteTest.bind(null, found.id)} label="Delete test" confirm={`Delete ${found.name}? This can't be undone.`} />
             </section>
         </>

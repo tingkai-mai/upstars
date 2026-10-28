@@ -48,7 +48,8 @@ async function EditWorksheet({ params }: Pick<Props, "params">) {
                 doneHref={listHref}
             />
             <section className="mt-4 flex flex-col gap-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-                <h2 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Danger zone</h2>
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Delete this worksheet</h2>
+                <p className="text-base text-zinc-600 dark:text-zinc-400">This can&apos;t be undone.</p>
                 <DeleteButton action={deleteWorksheet.bind(null, sheet.id)} label="Delete worksheet" confirm={`Delete ${sheet.name}? This can't be undone.`} />
             </section>
         </>

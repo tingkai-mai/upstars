@@ -1,15 +1,23 @@
 "use client";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { textareaClass } from "@/components/form";
+import { CheckIcon } from "@/components/icons";
 import { Modal } from "@/components/modal";
 
 type Saved = { message: string; shareText: string };
 
-const OnSavedContext = createContext<(saved: Saved) => void>(() => {});
+type FormEvents = {
+    /** Closes the check-in modal and opens the Share on WhatsApp modal */
+    onSaved: (saved: Saved) => void;
+    /** Whether the form has unsaved ticks or remarks, so closing it can ask first */
+    setDirty: (dirty: boolean) => void;
+};
 
-/** For the form inside the check-in modal: closes it and opens the Share on WhatsApp modal. */
-export function useOnCheckInSaved() {
-    return useContext(OnSavedContext);
+const FormEventsContext = createContext<FormEvents>({ onSaved: () => {}, setDirty: () => {} });
+
+/** For the form inside the check-in modal. */
+export function useCheckInFormEvents() {
+    return useContext(FormEventsContext);
 }
 
 type OpenModal = "check-in" | "past" | "share" | null;
@@ -21,18 +29,26 @@ type OpenModal = "check-in" | "past" | "share" | null;
 export function CheckInActions({ checkIn, pastCheckIns }: { checkIn: ReactNode; pastCheckIns: ReactNode }) {
     const [openModal, setOpenModal] = useState<OpenModal>(null);
     const [saved, setSaved] = useState<Saved>();
+    // A ref, not state: the form reports on every change and nothing re-renders from it
+    const dirty = useRef(false);
 
     // Close if Next hides this page (it keeps visited pages alive)
     useEffect(() => () => setOpenModal(null), []);
 
     function open(modal: OpenModal) {
+        dirty.current = false;
         setSaved(undefined);
         setOpenModal(modal);
     }
 
     function onSaved(result: Saved) {
+        dirty.current = false;
         setSaved(result);
         setOpenModal("share");
+    }
+
+    function setDirty(value: boolean) {
+        dirty.current = value;
     }
 
     const close = () => setOpenModal(null);
@@ -62,12 +78,12 @@ export function CheckInActions({ checkIn, pastCheckIns }: { checkIn: ReactNode; 
             )}
 
             {openModal === "check-in" && (
-                <Modal title="Lesson check-in" onClose={close}>
-                    <OnSavedContext value={onSaved}>{checkIn}</OnSavedContext>
+                <Modal title="Lesson check-in" onClose={close} size="full" confirmClose={() => !dirty.current || confirm("Close without saving? Your ticks and remarks will be lost.")}>
+                    <FormEventsContext value={{ onSaved, setDirty }}>{checkIn}</FormEventsContext>
                 </Modal>
             )}
             {openModal === "past" && (
-                <Modal title="Past Check-Ins" onClose={close} closeLabel="Close">
+                <Modal title="Past Check-Ins" onClose={close} closeLabel="Close" size="full">
                     {pastCheckIns}
                 </Modal>
             )}
@@ -81,12 +97,12 @@ function ShareModal({ initialText, onClose }: { initialText: string; onClose: ()
     const [text, setText] = useState(initialText);
 
     return (
-        <Modal title="Share on WhatsApp" onClose={onClose} closeLabel="Done">
-            <p className="-mt-2 text-base text-zinc-600 dark:text-zinc-400">Checked in. Share your remarks, e.g. with the student&apos;s parents.</p>
-            <label htmlFor="share-text" className="sr-only">
-                Message
-            </label>
-            <textarea id="share-text" value={text} onChange={(event) => setText(event.target.value)} rows={8} className={textareaClass} />
+        <Modal title="Share on WhatsApp" onClose={onClose} closeLabel="Skip">
+            <p className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-base font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
+                <CheckIcon />
+                Check-in saved
+            </p>
+            <p className="text-base text-zinc-700 dark:text-zinc-300">Want to send your remarks to the student&apos;s parents? WhatsApp will ask who to send them to.</p>
             <a
                 href={`https://wa.me/?text=${encodeURIComponent(text)}`}
                 target="_blank"
@@ -96,6 +112,12 @@ function ShareModal({ initialText, onClose }: { initialText: string; onClose: ()
             >
                 Share on WhatsApp
             </a>
+            <div className="flex flex-col gap-2">
+                <label htmlFor="share-text" className="text-base font-medium text-zinc-800 dark:text-zinc-200">
+                    Message (you can change it)
+                </label>
+                <textarea id="share-text" value={text} onChange={(event) => setText(event.target.value)} rows={5} className={textareaClass} />
+            </div>
         </Modal>
     );
 }

@@ -84,6 +84,7 @@ export function TestBuilder({ chapters, defaults, action, submitLabel, listHref 
                 error={error}
                 pending={pending}
                 canSubmit={selected.size > 0}
+                disabledHint="Tick at least one chapter to save."
                 submitLabel={submitLabel}
             />
         </form>

@@ -1,27 +1,21 @@
 import type { ReactNode } from "react";
 
-/** A two-column table: item details on the left, a Done tick-box on the right. */
-export function CompletionTable({ itemLabel, children }: { itemLabel: string; children: ReactNode }) {
+/** A bordered list of items, one per row; each row is usually a CompletionRow. */
+export function CompletionList({ label, children }: { label: string; children: ReactNode }) {
     return (
-        <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
-            <table className="w-full border-collapse text-left text-base">
-                <thead className="bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-                    <tr>
-                        <th scope="col" className="px-3 py-2 font-medium">
-                            {itemLabel}
-                        </th>
-                        <th scope="col" className="w-14 px-3 py-2 text-center font-medium">
-                            Done
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>{children}</tbody>
-            </table>
-        </div>
+        <ul aria-label={label} className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+            {children}
+        </ul>
     );
 }
+
+export const completionItemClass = "px-4 py-3";
 
 /** Dates are shown in Singapore time, where Upstars operates. */
 export function formatCompletedOn(date: Date) {
     return date.toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Singapore" });
+}
+
+export function CompletedOn({ date }: { date: Date }) {
+    return <span className="mt-1 block text-base font-medium text-emerald-700 dark:text-emerald-400">Done on {formatCompletedOn(date)}</span>;
 }

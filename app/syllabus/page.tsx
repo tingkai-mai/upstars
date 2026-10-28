@@ -5,7 +5,7 @@ import { isAdmin, requireUser } from "@/lib/session";
 import { formatMinutes, pluralize } from "@/lib/format";
 import { FormDialog } from "@/components/form-dialog";
 import { CheckIcon, EditListIcon, PenIcon } from "@/components/icons";
-import { addButtonClass, inlineEditButtonClass, secondaryButtonClass } from "@/components/form";
+import { addButtonClass, compactPrimaryButtonClass, inlineEditButtonClass, secondaryButtonClass } from "@/components/form";
 import { getSubjectPlan, type Chapter, type SubjectPlan, type Week } from "./queries";
 import * as actions from "./actions";
 import { ChapterFields, ConceptFields, WeekFields } from "./fields";
@@ -40,29 +40,34 @@ async function SyllabusTab({ searchParams }: Pick<Props, "searchParams">) {
             <SyllabusHeader tab="syllabus" selection={selection} canEdit={canEdit} />
 
             {!plan ? (
-                <EmptyState>No subjects yet.{canEdit && " Use Subjects above to add one."}</EmptyState>
+                <EmptyState>No subjects yet.{canEdit && " Use Edit levels & subjects above to add one."}</EmptyState>
             ) : (
                 <>
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <Summary plan={plan} />
-                        {canEdit && (
-                            <Link href={`/syllabus?subject=${plan.subject.id}${editing ? "" : "&edit=1"}`} replace scroll={false} className={`${secondaryButtonClass} gap-2`}>
-                                {editing ? <CheckIcon /> : <EditListIcon />}
-                                {editing ? "Done" : "Edit syllabus"}
+                    {editing ? (
+                        // Sticky, so Done stays in reach while editing further down
+                        <div className="sticky top-14 z-10 flex items-center gap-3 rounded-2xl bg-amber-50 p-3 shadow-sm sm:p-4 dark:bg-amber-950">
+                            <p className="flex-1 text-base text-amber-900 dark:text-amber-200">Editing. Changes save as you go. Open a chapter to change its weeks and concepts.</p>
+                            <Link href={`/syllabus?subject=${plan.subject.id}`} replace scroll={false} className={`${compactPrimaryButtonClass} gap-2`}>
+                                <CheckIcon />
+                                Done
                             </Link>
-                        )}
-                    </div>
-
-                    {editing && (
-                        <p className="rounded-2xl bg-amber-50 p-4 text-base text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-                            You&apos;re editing chapters, weeks and concepts. Changes save as you go.
-                        </p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <Summary plan={plan} />
+                            {canEdit && (
+                                <Link href={`/syllabus?subject=${plan.subject.id}&edit=1`} replace scroll={false} className={`${secondaryButtonClass} gap-2`}>
+                                    <EditListIcon />
+                                    Edit syllabus
+                                </Link>
+                            )}
+                        </div>
                     )}
 
                     {plan.chapters.length === 0 && <EmptyState>No chapters yet.{editing ? " Add one below." : ""}</EmptyState>}
                     <section aria-label="Chapters" className="flex flex-col gap-3">
-                        {plan.chapters.map((chapter) => (
-                            <ChapterTable key={chapter.id} chapter={chapter} plan={plan} editing={editing} />
+                        {plan.chapters.map((chapter, index) => (
+                            <ChapterTable key={chapter.id} chapter={chapter} plan={plan} editing={editing} defaultOpen={editing && index === 0} />
                         ))}
                     </section>
                     {editing && (
@@ -99,7 +104,7 @@ function Summary({ plan }: { plan: SubjectPlan }) {
     );
 }
 
-function ChapterTable({ chapter, plan, editing }: { chapter: Chapter; plan: SubjectPlan; editing: boolean }) {
+function ChapterTable({ chapter, plan, editing, defaultOpen }: { chapter: Chapter; plan: SubjectPlan; editing: boolean; defaultOpen: boolean }) {
     const teaching = chapter.weeks.reduce((sum, w) => sum + w.durationMin, 0);
     const conceptCount = chapter.weeks.reduce((sum, w) => sum + w.concepts.length, 0);
     const nextWeekNumber = Math.max(0, ...plan.chapters.flatMap((c) => c.weeks.map((w) => w.number))) + 1;
@@ -107,6 +112,7 @@ function ChapterTable({ chapter, plan, editing }: { chapter: Chapter; plan: Subj
 
     return (
         <Accordion
+            defaultOpen={defaultOpen}
             title={chapter.name}
             subtitle={chapter.weeks.length ? `${formatWeeks(chapter.weeks.map((w) => w.number))} · ${pluralize(conceptCount, "concept")} · ${formatMinutes(teaching)}` : "No weeks yet"}
         >
@@ -137,25 +143,9 @@ function ChapterTable({ chapter, plan, editing }: { chapter: Chapter; plan: Subj
             )}
 
             {chapter.weeks.length === 0 && <EmptyState>This chapter has no weeks yet.</EmptyState>}
-            {chapter.weeks.length > 0 && (
-                <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
-                    <table className="w-full border-collapse text-left text-base">
-                        <thead className="bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-                            <tr>
-                                <th scope="col" className="w-24 px-3 py-2 font-medium sm:w-32">
-                                    Week
-                                </th>
-                                <th scope="col" className="px-3 py-2 font-medium">
-                                    Concept
-                                </th>
-                            </tr>
-                        </thead>
-                        {chapter.weeks.map((week) => (
-                            <WeekRows key={week.id} week={week} editing={editing} chapterOptions={chapterOptions} />
-                        ))}
-                    </table>
-                </div>
-            )}
+            {chapter.weeks.map((week) => (
+                <WeekBlock key={week.id} week={week} editing={editing} chapterOptions={chapterOptions} />
+            ))}
 
             {editing && (
                 <FormDialog
@@ -173,84 +163,84 @@ function ChapterTable({ chapter, plan, editing }: { chapter: Chapter; plan: Subj
     );
 }
 
-/** One <tbody> per week: the week cell spans all of its concept rows. */
-function WeekRows({ week, editing, chapterOptions }: { week: Week; editing: boolean; chapterOptions: { id: string; name: string }[] }) {
-    const rowCount = Math.max(1, week.concepts.length) + (editing ? 1 : 0);
-
-    const weekCell = (
-        <th scope="rowgroup" rowSpan={rowCount} className="border-r border-zinc-200 px-3 py-2.5 align-top font-normal dark:border-zinc-800">
-            <span className="block whitespace-nowrap font-semibold text-zinc-900 dark:text-zinc-50">Week {week.number}</span>
-            <span className="block text-sm text-zinc-600 dark:text-zinc-400">{formatMinutes(week.durationMin)}</span>
-            {editing && (
-                <FormDialog
-                    title={`Edit week ${week.number}`}
-                    trigger={<><PenIcon />Edit</>}
-                    triggerLabel={`Edit week ${week.number}`}
-                    triggerClassName={`${inlineEditButtonClass} mt-2`}
-                    submitLabel="Save week"
-                    action={actions.updateWeek.bind(null, week.id)}
-                    remove={{
-                        action: actions.deleteWeek.bind(null, week.id),
-                        label: "Delete week",
-                        confirm: `Delete week ${week.number}? Its ${pluralize(week.concepts.length, "concept")} will be deleted too, and removed from any worksheets.`,
-                    }}
-                >
-                    <WeekFields defaults={week} chapters={chapterOptions} />
-                </FormDialog>
-            )}
-        </th>
-    );
-
+/** A week's heading, then its concepts in order. Editing adds controls on a line of their own under each name. */
+function WeekBlock({ week, editing, chapterOptions }: { week: Week; editing: boolean; chapterOptions: { id: string; name: string }[] }) {
     return (
-        <tbody className="border-t border-zinc-200 dark:border-zinc-800">
-            {week.concepts.length === 0 && (
-                <tr>
-                    {weekCell}
-                    <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400">No concepts yet</td>
-                </tr>
-            )}
-            {week.concepts.map((concept, index) => (
-                <tr key={concept.id} className="border-t border-zinc-100 first:border-t-0 dark:border-zinc-800/60">
-                    {index === 0 && weekCell}
-                    <td className="px-3 py-2.5 align-top text-zinc-800 dark:text-zinc-200">
-                        <div className="flex items-start gap-2">
-                            <span className="min-w-0 flex-1">{concept.name}</span>
-                            {editing && week.concepts.length > 1 && (
-                                <MoveButtons action={actions.moveConcept.bind(null, concept.id)} name={concept.name} isFirst={index === 0} isLast={index === week.concepts.length - 1} />
-                            )}
-                            {editing && (
+        <section className="flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                    Week {week.number} <span className="font-normal text-zinc-600 dark:text-zinc-400">· {formatMinutes(week.durationMin)}</span>
+                </h4>
+                {editing && (
+                    <FormDialog
+                        title={`Edit week ${week.number}`}
+                        trigger={
+                            <>
+                                <PenIcon />
+                                Edit week
+                            </>
+                        }
+                        triggerLabel={`Edit week ${week.number}`}
+                        triggerClassName={inlineEditButtonClass}
+                        submitLabel="Save week"
+                        action={actions.updateWeek.bind(null, week.id)}
+                        remove={{
+                            action: actions.deleteWeek.bind(null, week.id),
+                            label: "Delete week",
+                            confirm: `Delete week ${week.number}? Its ${pluralize(week.concepts.length, "concept")} will be deleted too, and removed from any worksheets.`,
+                        }}
+                    >
+                        <WeekFields defaults={week} chapters={chapterOptions} />
+                    </FormDialog>
+                )}
+            </div>
+
+            {week.concepts.length === 0 && <p className="px-3 py-3 text-base text-zinc-600 dark:text-zinc-400">No concepts yet</p>}
+            <ol className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                {week.concepts.map((concept, index) => (
+                    <li key={concept.id} className="flex flex-col gap-2 px-3 py-2.5">
+                        <span className="text-base text-zinc-900 dark:text-zinc-100">{concept.name}</span>
+                        {editing && (
+                            <div className="flex items-center justify-end gap-1">
+                                {week.concepts.length > 1 && (
+                                    <MoveButtons action={actions.moveConcept.bind(null, concept.id)} name={concept.name} isFirst={index === 0} isLast={index === week.concepts.length - 1} />
+                                )}
                                 <FormDialog
                                     title="Edit concept"
-                                    trigger={<PenIcon />}
+                                    trigger={
+                                        <>
+                                            <PenIcon />
+                                            Edit
+                                        </>
+                                    }
                                     triggerLabel={`Edit concept ${concept.name}`}
-                                    triggerClassName={`${inlineEditButtonClass} -my-1.5`}
+                                    triggerClassName={inlineEditButtonClass}
                                     submitLabel="Save concept"
                                     action={actions.updateConcept.bind(null, concept.id)}
                                     remove={{ action: actions.deleteConcept.bind(null, concept.id), label: "Delete concept", confirm: `Delete “${concept.name}”? It will also be removed from any worksheets.` }}
                                 >
                                     <ConceptFields defaultName={concept.name} />
                                 </FormDialog>
-                            )}
-                        </div>
-                    </td>
-                </tr>
-            ))}
+                            </div>
+                        )}
+                    </li>
+                ))}
+            </ol>
+
             {editing && (
-                <tr className="border-t border-zinc-100 dark:border-zinc-800/60">
-                    <td className="px-3 py-2">
-                        <FormDialog
-                            title={`Add concept to week ${week.number}`}
-                            trigger="+ Add concept"
-                            triggerLabel={`Add concept to week ${week.number}`}
-                            triggerClassName={addButtonClass.replace("h-12", "h-10")}
-                            submitLabel="Add concept"
-                            action={actions.createConcept.bind(null, week.id)}
-                        >
-                            <ConceptFields />
-                        </FormDialog>
-                    </td>
-                </tr>
+                <div className="border-t border-zinc-200 p-2 dark:border-zinc-800">
+                    <FormDialog
+                        title={`Add concept to week ${week.number}`}
+                        trigger="+ Add concept"
+                        triggerLabel={`Add concept to week ${week.number}`}
+                        triggerClassName={addButtonClass}
+                        submitLabel="Add concept"
+                        action={actions.createConcept.bind(null, week.id)}
+                    >
+                        <ConceptFields />
+                    </FormDialog>
+                </div>
             )}
-        </tbody>
+        </section>
     );
 }

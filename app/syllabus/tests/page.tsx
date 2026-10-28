@@ -40,7 +40,7 @@ async function TestsTab({ searchParams }: Pick<Props, "searchParams">) {
             <SyllabusHeader tab="tests" selection={selection} canEdit={canEdit} testType={type} />
 
             {!subject || !plan ? (
-                <EmptyState>No subjects yet.{canEdit && " Use Manage subjects above to add one."}</EmptyState>
+                <EmptyState>No subjects yet.{canEdit && " Use Edit levels & subjects above to add one."}</EmptyState>
             ) : (
                 <>
                     <div className="flex items-center justify-between gap-4">

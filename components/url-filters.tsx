@@ -1,5 +1,5 @@
 // Used only inside client components, so it needs no "use client" entry of its own
-import { useTransition } from "react";
+import { Fragment, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { selectClass, selectStyle } from "@/components/form";
 
@@ -20,27 +20,42 @@ export function useUrlFilters() {
     return { pending, update };
 }
 
+type Option = { value: string; label: string; group?: string };
+
 type FilterSelectProps = {
     id: string;
     label: string;
     value: string;
     onChange: (value: string) => void;
-    options: { value: string; label: string }[];
+    /** Options with a group are shown under that heading, in the order the groups first appear */
+    options: Option[];
     className?: string;
 };
 
 export function FilterSelect({ id, label, value, onChange, options, className = "" }: FilterSelectProps) {
+    const groups = [...new Set(options.map((o) => o.group))];
+    const renderOptions = (items: Option[]) =>
+        items.map((option) => (
+            <option key={option.value} value={option.value}>
+                {option.label}
+            </option>
+        ));
+
     return (
         <div className={`flex flex-col gap-1.5 ${className}`}>
-            <label htmlFor={id} className="text-sm font-medium text-zinc-800 dark:text-zinc-300">
+            <label htmlFor={id} className="text-base font-medium text-zinc-800 dark:text-zinc-300">
                 {label}
             </label>
             <select id={id} value={value} onChange={(event) => onChange(event.target.value)} className={selectClass} style={selectStyle}>
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
+                {groups.map((group) =>
+                    group === undefined ? (
+                        <Fragment key="">{renderOptions(options.filter((o) => o.group === undefined))}</Fragment>
+                    ) : (
+                        <optgroup key={group} label={group}>
+                            {renderOptions(options.filter((o) => o.group === group))}
+                        </optgroup>
+                    ),
+                )}
             </select>
         </div>
     );

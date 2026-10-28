@@ -30,6 +30,24 @@ export function PastCheckInsCarousel({ checkIns }: { checkIns: PastCheckIn[] }) 
 
     return (
         <div className="flex flex-col gap-3">
+            {/* Above the lesson, so they stay in view however long it is */}
+            {checkIns.length > 1 && (
+                <div className="flex flex-col gap-2">
+                    <p className="text-center text-base font-medium tabular-nums text-zinc-800 dark:text-zinc-200" aria-live="polite">
+                        Lesson {checkIns.length - index} of {checkIns.length}
+                        {isNewest && " (latest)"}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                        <button type="button" onClick={() => go("older")} disabled={isOldest} className={`${secondaryButtonClass} h-12 disabled:opacity-40`}>
+                            <span aria-hidden>‹</span>&nbsp;Older lesson
+                        </button>
+                        <button type="button" onClick={() => go("newer")} disabled={isNewest} className={`${secondaryButtonClass} h-12 disabled:opacity-40`}>
+                            Newer lesson&nbsp;<span aria-hidden>›</span>
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div
                 ref={trackRef}
                 onScroll={handleScroll}
@@ -45,20 +63,6 @@ export function PastCheckInsCarousel({ checkIns }: { checkIns: PastCheckIn[] }) 
                     </article>
                 ))}
             </div>
-
-            {checkIns.length > 1 && (
-                <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => go("older")} disabled={isOldest} className={`${secondaryButtonClass} disabled:opacity-40`}>
-                        <span aria-hidden>‹</span>&nbsp;Older
-                    </button>
-                    <p className="flex-1 text-center text-sm tabular-nums text-zinc-600 dark:text-zinc-400" aria-live="polite">
-                        {isNewest ? "Latest lesson" : `${index} ${index === 1 ? "lesson" : "lessons"} back`} · {index + 1}/{checkIns.length}
-                    </p>
-                    <button type="button" onClick={() => go("newer")} disabled={isNewest} className={`${secondaryButtonClass} disabled:opacity-40`}>
-                        Newer&nbsp;<span aria-hidden>›</span>
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
@@ -68,10 +72,11 @@ function CheckInCard({ checkIn }: { checkIn: PastCheckIn }) {
         <div className="flex flex-col gap-3 rounded-xl bg-zinc-50 p-4 text-base dark:bg-zinc-900/60">
             <div>
                 <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{formatLessonDate(checkIn.lessonDate)}</p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="text-base text-zinc-600 dark:text-zinc-400">
                     {checkIn.subject} · By {checkIn.recordedByName ?? "a former user"}
                 </p>
             </div>
+            <p className="whitespace-pre-line border-l-4 border-zinc-300 pl-3 text-zinc-800 dark:border-zinc-700 dark:text-zinc-200">{checkIn.remarks}</p>
             <dl className="grid grid-cols-2 gap-1 rounded-lg bg-white p-1 text-center sm:grid-cols-4 dark:bg-zinc-950">
                 {REWARDS.map((r) => (
                     <div key={r.key} className="py-1">
@@ -86,19 +91,42 @@ function CheckInCard({ checkIn }: { checkIn: PastCheckIn }) {
                     </dd>
                 </div>
             </dl>
-            <CoveredLine label="Concepts" names={checkIn.concepts} />
-            <CoveredLine label="Worksheets" names={checkIn.worksheets} />
-            <CoveredLine label="Tests" names={checkIn.tests} />
-            <p className="whitespace-pre-line border-l-4 border-zinc-300 pl-3 text-zinc-800 dark:border-zinc-700 dark:text-zinc-200">{checkIn.remarks}</p>
+            <CoveredList label="Concepts" names={checkIn.concepts} />
+            <CoveredList label="Worksheets" names={checkIn.worksheets} />
+            <CoveredList label="Tests" names={checkIn.tests} />
         </div>
     );
 }
 
-function CoveredLine({ label, names }: { label: string; names: string[] }) {
+const VISIBLE_ITEMS = 4;
+
+/** A bulleted list; long ones show the first few with the rest behind "Show N more". */
+function CoveredList({ label, names }: { label: string; names: string[] }) {
     if (names.length === 0) return null;
+    const bullets = (items: string[]) => (
+        <ul className="list-disc pl-5 text-zinc-800 dark:text-zinc-200">
+            {items.map((name, i) => (
+                <li key={i}>{name}</li>
+            ))}
+        </ul>
+    );
+    const rest = names.slice(VISIBLE_ITEMS);
+
     return (
-        <p className="text-zinc-700 dark:text-zinc-300">
-            <span className="font-medium text-zinc-900 dark:text-zinc-50">{label}:</span> {names.join(", ")}
-        </p>
+        <div className="flex flex-col gap-1">
+            <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                {label} ({names.length})
+            </p>
+            {bullets(names.slice(0, VISIBLE_ITEMS))}
+            {rest.length > 0 && (
+                <details className="group/more">
+                    <summary className="inline-flex min-h-11 cursor-pointer list-none items-center font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-50 [&::-webkit-details-marker]:hidden">
+                        <span className="group-open/more:hidden">Show {rest.length} more</span>
+                        <span className="hidden group-open/more:inline">Showing all</span>
+                    </summary>
+                    {bullets(rest)}
+                </details>
+            )}
+        </div>
     );
 }

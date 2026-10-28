@@ -85,3 +85,12 @@ export function ChevronRightIcon() {
         </svg>
     );
 }
+
+export function MailIcon() {
+    return (
+        <svg {...iconProps} className="size-5 shrink-0">
+            <rect x="2.5" y="4.5" width="15" height="11" rx="2" />
+            <path d="m3 5.5 7 5.5 7-5.5" />
+        </svg>
+    );
+}

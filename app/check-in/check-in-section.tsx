@@ -22,7 +22,10 @@ export async function CheckInSection({ viewer, params }: { viewer: Viewer; param
     const [allStudents, paired] = await Promise.all([listUsersByRole("student"), viewer.role === "tutor" ? listPairedPeople(viewer.id, "tutor") : []]);
     // A tutor's own students come first, so the default is one of theirs
     const pairedIds = new Set(paired.map((s) => s.id));
-    const students = [...allStudents.filter((s) => pairedIds.has(s.id)), ...allStudents.filter((s) => !pairedIds.has(s.id))];
+    const students = [
+        ...allStudents.filter((s) => pairedIds.has(s.id)).map((s) => ({ ...s, group: "Your students" })),
+        ...allStudents.filter((s) => !pairedIds.has(s.id)).map((s) => ({ ...s, group: pairedIds.size ? "Other students" : undefined })),
+    ];
     const student = students.find((s) => s.id === params.student) ?? students[0];
 
     return (
@@ -67,10 +70,27 @@ async function CheckInContent({ students, student, params }: ContentProps & { pa
 
     return (
         <>
-            <FilterPanel>
-                {picker}
-                <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={subject.id} />
-            </FilterPanel>
+            {/* Folded into one line, so the form starts near the top; tutors mostly check in their own student */}
+            <details className="group/who rounded-2xl bg-zinc-100 dark:bg-zinc-900">
+                <summary className="flex min-h-16 cursor-pointer list-none items-center gap-3 rounded-2xl px-4 py-3 [&::-webkit-details-marker]:hidden">
+                    <span className="min-w-0 flex-1">
+                        <span className="block text-lg font-semibold text-zinc-900 dark:text-zinc-50">{student.name}</span>
+                        <span className="block text-base text-zinc-700 dark:text-zinc-300">
+                            {subject.level} {subject.name}
+                        </span>
+                    </span>
+                    <span className="inline-flex h-11 shrink-0 items-center rounded-lg bg-white px-4 text-base font-medium text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-zinc-200">
+                        <span className="group-open/who:hidden">Change</span>
+                        <span className="hidden group-open/who:inline">Hide</span>
+                    </span>
+                </summary>
+                <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+                    <FilterPanel>
+                        {picker}
+                        <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={subject.id} />
+                    </FilterPanel>
+                </div>
+            </details>
             <CheckInForm
                 // Remount on a new selection, so ticks from one student or subject don't carry over
                 key={`${student.id}-${subject.id}`}

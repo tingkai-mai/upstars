@@ -5,8 +5,8 @@ import { TEST_TYPE_LABELS } from "@/lib/tests";
 import { EmptyState, formatWeeks } from "@/app/syllabus/ui";
 import { loadProgress } from "../context";
 import { GoalsHeader } from "../goals-header";
-import { CompletionCheckbox } from "../completion-checkbox";
-import { CompletionTable, formatCompletedOn } from "../completion-table";
+import { CompletionRow } from "../completion-checkbox";
+import { CompletedOn, CompletionList, completionItemClass } from "../completion-table";
 
 export const metadata: Metadata = { title: "Test progress" };
 
@@ -37,30 +37,27 @@ async function TestProgress({ searchParams }: Pick<Props, "searchParams">) {
             {tests.length === 0 ? (
                 <EmptyState>This subject has no tests yet.</EmptyState>
             ) : (
-                <CompletionTable itemLabel="Test">
+                <CompletionList label="Tests">
                     {tests.map((t) => {
                         const completedAt = data.completion.tests.get(t.id);
                         const chapters = data.plan.chapters.filter((c) => t.chapterIds.includes(c.id));
                         return (
-                            <tr key={t.id} className="border-t border-zinc-200 dark:border-zinc-800">
-                                <td className="px-3 py-2.5 align-top">
+                            <li key={t.id} className={completionItemClass}>
+                                <CompletionRow kind="test" studentId={student.id} itemId={t.id} done={Boolean(completedAt)} label={t.name} editable={data.canEdit}>
                                     <span className="flex flex-wrap items-center gap-2">
-                                        <span className="font-medium text-zinc-900 dark:text-zinc-50">{t.name}</span>
-                                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">{TEST_TYPE_LABELS[t.type].one}</span>
+                                        <span className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{t.name}</span>
+                                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-sm text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">{TEST_TYPE_LABELS[t.type].one}</span>
                                     </span>
-                                    <span className="block text-sm text-zinc-600 dark:text-zinc-400">
+                                    <span className="block text-base text-zinc-600 dark:text-zinc-400">
                                         {formatWeeks(chapters.flatMap((c) => c.weeks.map((w) => w.number)))} · {pluralize(chapters.length, "chapter")}
                                         {t.durationMin !== null && ` · ${formatMinutes(t.durationMin)}`}
-                                        {completedAt && ` · Done ${formatCompletedOn(completedAt)}`}
                                     </span>
-                                </td>
-                                <td className="px-3 py-2.5 text-center align-top">
-                                    <CompletionCheckbox kind="test" studentId={student.id} itemId={t.id} done={Boolean(completedAt)} label={t.name} editable={data.canEdit} />
-                                </td>
-                            </tr>
+                                    {completedAt && <CompletedOn date={completedAt} />}
+                                </CompletionRow>
+                            </li>
                         );
                     })}
-                </CompletionTable>
+                </CompletionList>
             )}
         </>
     );

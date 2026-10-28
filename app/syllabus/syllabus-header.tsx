@@ -9,7 +9,7 @@ import { ManageSubjects } from "./manage-subjects";
 type Props = {
     tab: "syllabus" | "worksheets" | "tests";
     selection: Selection;
-    /** Admins get the Subjects button for adding and editing levels and subjects */
+    /** Admins get the Levels & subjects button for adding and editing them */
     canEdit: boolean;
     /** Tests tab: the selected test type, shown as a third filter */
     testType?: TestType;
@@ -17,10 +17,11 @@ type Props = {
 
 export function SyllabusHeader({ tab, selection, canEdit, testType }: Props) {
     const query = selection.subject ? `?subject=${selection.subject.id}` : "";
+    const manageSubjects = canEdit && <ManageSubjects subjects={selection.subjects} />;
 
     return (
         <>
-            <PageHeader title="Syllabus management" back={{ href: "/", label: "Home" }} action={canEdit && <ManageSubjects subjects={selection.subjects} />} />
+            <PageHeader title="Syllabus management" back={{ href: "/", label: "Home" }} action={!selection.subject && manageSubjects} />
             <Tabs
                 label="Syllabus management"
                 tabs={[
@@ -32,6 +33,8 @@ export function SyllabusHeader({ tab, selection, canEdit, testType }: Props) {
             {selection.subject && (
                 <FilterPanel>
                     <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={selection.subject.id} testType={testType} />
+                    {/* Next to the pickers it changes; with no subjects yet it sits in the header instead */}
+                    {manageSubjects && <div>{manageSubjects}</div>}
                 </FilterPanel>
             )}
         </>

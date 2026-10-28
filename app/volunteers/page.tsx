@@ -9,7 +9,7 @@ import { user } from "@/db/schema";
 import { isAdmin, requireUser } from "@/lib/session";
 import { PageHeader } from "@/components/page-header";
 import { Toast } from "@/components/toast";
-import { RoleBadge } from "./role-badge";
+import { UserList } from "./user-list";
 import { VolunteerTabs } from "./volunteer-tabs";
 
 export const metadata: Metadata = { title: "Volunteer management" };
@@ -21,13 +21,13 @@ type Props = PageProps<"/volunteers">;
 export default function VolunteersPage({ searchParams }: Props) {
     return (
         <Suspense fallback={<p className="text-zinc-600">Loading users…</p>}>
-            <UserList searchParams={searchParams} />
+            <Users searchParams={searchParams} />
         </Suspense>
     );
 }
 
 /** Admins manage everyone; tutors can browse everyone's profiles; students only have their own. */
-async function UserList({ searchParams }: Pick<Props, "searchParams">) {
+async function Users({ searchParams }: Pick<Props, "searchParams">) {
     const viewer = await requireUser();
     if (viewer.role === "student") redirect(`/volunteers/${viewer.id}`);
     const admin = isAdmin(viewer);
@@ -41,48 +41,20 @@ async function UserList({ searchParams }: Pick<Props, "searchParams">) {
 
     return (
         <>
-            <PageHeader title="Volunteer management" back={{ href: "/", label: "Home" }} />
+            <PageHeader
+                title="Volunteer management"
+                back={{ href: "/", label: "Home" }}
+                action={
+                    admin && (
+                        <Link href="/volunteers/new" className={compactPrimaryButtonClass}>
+                            Add user
+                        </Link>
+                    )
+                }
+            />
             <VolunteerTabs active="users" />
             {noticeMessage && <Toast message={noticeMessage} />}
-
-            <div className="flex min-h-10 items-center justify-between gap-4">
-                <p className="text-base text-zinc-600 dark:text-zinc-400">
-                    {users.length} {users.length === 1 ? "user" : "users"}
-                </p>
-                {admin && (
-                    <Link
-                        href="/volunteers/new"
-                        className={compactPrimaryButtonClass}
-                    >
-                        Add user
-                    </Link>
-                )}
-            </div>
-
-            <ul className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-                {users.map((member) => (
-                    <li key={member.id}>
-                        <Link
-                            // Admins have no profile, so admins go straight to editing them
-                            href={admin && member.role === "admin" ? `/volunteers/${member.id}/edit` : `/volunteers/${member.id}`}
-                            className="flex min-h-16 items-center gap-3 px-4 py-3 transition hover:bg-zinc-50 active:bg-zinc-100 dark:hover:bg-zinc-900 dark:active:bg-zinc-800"
-                        >
-                            <div className="min-w-0 flex-1">
-                                <p className="truncate text-lg font-medium text-zinc-900 dark:text-zinc-50">
-                                    {member.name}
-                                    {member.id === viewer.id && <span className="font-normal text-zinc-600"> (you)</span>}
-                                </p>
-                                <p className="truncate text-base text-zinc-600 dark:text-zinc-400">
-                                    {member.email}
-                                    {member.currentLevel && ` · ${member.currentLevel}`}
-                                </p>
-                            </div>
-                            <RoleBadge role={member.role} />
-                            <span aria-hidden className="text-zinc-400">›</span>
-                        </Link>
-                    </li>
-                ))}
-            </ul>
+            <UserList users={users} viewerId={viewer.id} admin={admin} />
         </>
     );
 }

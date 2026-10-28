@@ -29,7 +29,7 @@ export function GoalsHeader({ tab, progress }: { tab: GoalsTab; progress: Progre
             ) : (
                 <>
                     {/* Students only ever see themselves, so they get a heading rather than a picker */}
-                    {viewer.role === "student" && <p className="-mt-3 text-base text-zinc-600 dark:text-zinc-400">Your progress</p>}
+                    {viewer.role === "student" && <p className="-mt-3 text-base text-zinc-600 dark:text-zinc-400">Hi {viewer.name}, here&apos;s your progress</p>}
                     <Tabs label="Goal tracking" tabs={TABS.map((t) => ({ label: t.label, href: `${t.path}?${query}`, active: t.key === tab }))} />
                     {(viewer.role !== "student" || selection.subject) && (
                         <FilterPanel>
@@ -37,7 +37,7 @@ export function GoalsHeader({ tab, progress }: { tab: GoalsTab; progress: Progre
                             {selection.subject && <SyllabusFilter subjects={selection.subjects} levels={selection.levels} level={selection.level} subjectId={selection.subject.id} />}
                         </FilterPanel>
                     )}
-                    {!data ? <EmptyState>No subjects yet.</EmptyState> : <ProgressSummary data={data} />}
+                    {!data ? <EmptyState>No subjects yet.</EmptyState> : <ProgressSummary data={data} isStudent={viewer.role === "student"} />}
                 </>
             )}
         </>
@@ -48,12 +48,12 @@ export function percent(done: number, total: number) {
     return total === 0 ? 0 : Math.round((done / total) * 100);
 }
 
-function ProgressSummary({ data }: { data: ProgressData }) {
+function ProgressSummary({ data, isStudent }: { data: ProgressData; isStudent: boolean }) {
     const conceptTotal = data.plan.chapters.reduce((sum, c) => sum + c.weeks.reduce((n, w) => n + w.concepts.length, 0), 0);
     const tiles = [
-        { label: "Syllabus", done: data.completion.concepts.size, total: conceptTotal, detail: (done: number, total: number) => `${done}/${pluralize(total, "concept")}` },
-        { label: "Worksheets", done: data.completion.worksheets.size, total: data.worksheets.length, detail: (done: number, total: number) => `${done}/${total} done` },
-        { label: "Tests", done: data.completion.tests.size, total: data.tests.length, detail: (done: number, total: number) => `${done}/${total} done` },
+        { label: "Syllabus", done: data.completion.concepts.size, total: conceptTotal, detail: (done: number, total: number) => `${done} of ${pluralize(total, "concept")}` },
+        { label: "Worksheets", done: data.completion.worksheets.size, total: data.worksheets.length, detail: (done: number, total: number) => `${done} of ${total} done` },
+        { label: "Tests", done: data.completion.tests.size, total: data.tests.length, detail: (done: number, total: number) => `${done} of ${total} done` },
     ];
 
     return (
@@ -70,7 +70,11 @@ function ProgressSummary({ data }: { data: ProgressData }) {
                     </div>
                 ))}
             </dl>
-            {!data.canEdit && <p className="text-sm text-zinc-600 dark:text-zinc-400">View only. Admins and this student&apos;s tutors can update progress.</p>}
+            {!data.canEdit && (
+                <p className="text-base text-zinc-600 dark:text-zinc-400">
+                    {isStudent ? "Your tutor ticks these off as you finish them." : "View only. Admins and this student's tutors can update progress."}
+                </p>
+            )}
         </section>
     );
 }

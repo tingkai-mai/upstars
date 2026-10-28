@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState, useTransition, type SubmitEvent } from "react";
 import { useRouter } from "next/navigation";
-import { compactPrimaryButtonClass, FormError, inputClass, inlineEditButtonClass, secondaryButtonClass, selectClass, selectStyle } from "@/components/form";
-import { PenIcon } from "@/components/icons";
+import { compactPrimaryButtonClass, dangerButtonClass, FormError, inputClass, inlineEditButtonClass, secondaryButtonClass, selectClass, selectStyle } from "@/components/form";
+import { ChevronRightIcon, PenIcon } from "@/components/icons";
 import { Modal } from "@/components/modal";
 import { pluralize } from "@/lib/format";
 import { createSubject, deleteSubject, updateSubject } from "./actions";
@@ -10,6 +10,7 @@ import { createSubject, deleteSubject, updateSubject } from "./actions";
 type Subject = { id: string; level: string; name: string; weekCount: number };
 
 const smallInputClass = inputClass.replace("h-12", "h-11");
+const labelClass = "text-base font-medium text-zinc-800 dark:text-zinc-200";
 
 export function ManageSubjects({ subjects }: { subjects: Subject[] }) {
     const [open, setOpen] = useState(false);
@@ -19,9 +20,9 @@ export function ManageSubjects({ subjects }: { subjects: Subject[] }) {
 
     return (
         <>
-            <button type="button" onClick={() => setOpen(true)} className={`${secondaryButtonClass} gap-2`}>
+            <button type="button" onClick={() => setOpen(true)} className={`${secondaryButtonClass} gap-2 bg-white dark:bg-zinc-950`}>
                 <PenIcon />
-                Manage subjects
+                Edit levels &amp; subjects
             </button>
             {open && <SubjectsModal subjects={subjects} onClose={() => setOpen(false)} />}
         </>
@@ -42,7 +43,7 @@ function SubjectsModal({ subjects, onClose }: { subjects: Subject[]; onClose: ()
         <Modal title="Levels & subjects" onClose={onClose} closeLabel="Close">
 
             <div className="-mx-5 flex max-h-[50dvh] flex-col gap-5 overflow-y-auto px-5 sm:-mx-6 sm:px-6">
-                {levels.length === 0 && <p className="text-sm text-zinc-600 dark:text-zinc-400">No subjects yet. Add the first one below.</p>}
+                {levels.length === 0 && <p className="text-base text-zinc-600 dark:text-zinc-400">No subjects yet. Add the first one below.</p>}
                 {levels.map((level) => (
                     <section key={level} className="flex flex-col gap-2">
                         <h3 className="text-base font-semibold text-zinc-800 dark:text-zinc-300">{level}</h3>
@@ -55,8 +56,11 @@ function SubjectsModal({ subjects, onClose }: { subjects: Subject[]; onClose: ()
                                     ) : (
                                         <li key={s.id} className="flex items-center gap-2 px-3 py-2">
                                             <button type="button" onClick={() => openSubject(s.id)} className="min-w-0 flex-1 rounded-lg px-1 py-1 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900">
-                                                <span className="block truncate font-medium">{s.name}</span>
-                                                <span className="block text-sm text-zinc-600 dark:text-zinc-400">{pluralize(s.weekCount, "week")}</span>
+                                                <span className="flex items-center gap-1">
+                                                    <span className="min-w-0 truncate text-lg font-medium">{s.name}</span>
+                                                    <ChevronRightIcon />
+                                                </span>
+                                                <span className="block text-base text-zinc-600 dark:text-zinc-400">{pluralize(s.weekCount, "week")} · tap to open</span>
                                             </button>
                                             <button
                                                 type="button"
@@ -64,6 +68,7 @@ function SubjectsModal({ subjects, onClose }: { subjects: Subject[]; onClose: ()
                                                 aria-label={`Edit ${s.level} ${s.name}`}
                                                 className={inlineEditButtonClass}
                                             >
+                                                <PenIcon />
                                                 Edit
                                             </button>
                                         </li>
@@ -98,9 +103,12 @@ const NEW_LEVEL = "__new__";
 
 function SubjectInputs({ levels, defaults }: { levels: string[]; defaults?: { level: string; name: string } }) {
     return (
-        <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-2">
+        <div className="flex flex-col gap-3">
             <LevelPicker levels={levels} defaultLevel={defaults?.level} />
-            <input name="name" aria-label="Subject" placeholder="Subject" required autoComplete="off" defaultValue={defaults?.name} className={smallInputClass} />
+            <label className="flex flex-col gap-1.5">
+                <span className={labelClass}>Subject name</span>
+                <input name="name" placeholder="e.g. Mathematics" required autoComplete="off" defaultValue={defaults?.name} className={smallInputClass} />
+            </label>
         </div>
     );
 }
@@ -115,11 +123,14 @@ function LevelPicker({ levels, defaultLevel }: { levels: string[]; defaultLevel?
 
     if (typing) {
         return (
-            <div className="relative">
-                <input name="level" aria-label="New level" placeholder="New level, e.g. P5" required autoComplete="off" autoFocus={levels.length > 0} className={`${smallInputClass} ${levels.length ? "pr-9" : ""}`} />
+            <div className="flex flex-col gap-1.5">
+                <label className="flex flex-col gap-1.5">
+                    <span className={labelClass}>New level</span>
+                    <input name="level" placeholder="e.g. P5" required autoComplete="off" autoFocus={levels.length > 0} className={smallInputClass} />
+                </label>
                 {levels.length > 0 && (
-                    <button type="button" onClick={() => setTyping(false)} aria-label="Choose an existing level" className="absolute inset-y-0 right-0 px-3 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50">
-                        ×
+                    <button type="button" onClick={() => setTyping(false)} className="w-fit text-base font-medium text-zinc-800 underline underline-offset-4 dark:text-zinc-200">
+                        Pick an existing level instead
                     </button>
                 )}
             </div>
@@ -127,21 +138,24 @@ function LevelPicker({ levels, defaultLevel }: { levels: string[]; defaultLevel?
     }
 
     return (
-        <select
-            name="level"
-            aria-label="Level"
-            value={level}
-            onChange={(event) => (event.target.value === NEW_LEVEL ? setTyping(true) : setLevel(event.target.value))}
-            className={selectClass.replace("h-12", "h-11")}
-            style={selectStyle}
-        >
-            {levels.map((option) => (
-                <option key={option} value={option}>
-                    {option}
-                </option>
-            ))}
-            <option value={NEW_LEVEL}>+ New level…</option>
-        </select>
+        <label className="flex flex-col gap-1.5">
+            <span className={labelClass}>Level</span>
+            <select
+                name="level"
+                value={level}
+                onChange={(event) => (event.target.value === NEW_LEVEL ? setTyping(true) : setLevel(event.target.value))}
+                className={selectClass.replace("h-12", "h-11")}
+                style={selectStyle}
+            >
+                {levels.map((option) => (
+                    <option key={option} value={option}>
+                        {option}
+                    </option>
+                ))}
+                <option value={NEW_LEVEL}>+ New level…</option>
+            </select>
+            <span className="text-sm text-zinc-600 dark:text-zinc-400">To add a new level, choose “+ New level…” in this list.</span>
+        </label>
     );
 }
 
@@ -188,15 +202,15 @@ function EditSubjectRow({ subject, levels, onDone }: { subject: Subject; levels:
             <form onSubmit={handleSubmit} className="flex flex-col gap-2">
                 <SubjectInputs levels={levels} defaults={subject} />
                 <FormError message={error} />
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="grid grid-cols-2 gap-2">
                     <button type="submit" disabled={pending} className={compactPrimaryButtonClass}>
                         {pending ? "Saving…" : "Save"}
                     </button>
-                    <button type="button" onClick={onDone} disabled={pending} className={secondaryButtonClass}>
+                    <button type="button" onClick={onDone} disabled={pending} className={`${secondaryButtonClass} bg-white dark:bg-zinc-950`}>
                         Cancel
                     </button>
-                    <button type="button" onClick={handleDelete} disabled={pending} className="ml-auto inline-flex h-11 items-center rounded-xl px-3 text-base font-medium text-red-700 hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950/50">
-                        Delete
+                    <button type="button" onClick={handleDelete} disabled={pending} className={`${dangerButtonClass} col-span-2 h-11`}>
+                        Delete subject
                     </button>
                 </div>
             </form>

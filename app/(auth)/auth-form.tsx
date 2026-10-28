@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { MIN_PASSWORD_LENGTH } from "@/lib/users";
-import { Field, FormError, inputClass, primaryButtonClass } from "@/components/form";
+import { Field, FormError, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/form";
 
 type Mode = "login" | "signup";
 
@@ -127,12 +127,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
                 </button>
             </form>
 
-            <p className="text-center text-base text-zinc-600 dark:text-zinc-400">
-                {copy.switchPrompt}{" "}
-                <Link href={copy.switchHref} replace className="font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-50">
+            <div className="flex flex-col gap-2 text-center">
+                <p className="text-base text-zinc-600 dark:text-zinc-400">{copy.switchPrompt}</p>
+                <Link href={copy.switchHref} replace className={`${secondaryButtonClass} h-12 w-full`}>
                     {copy.switchLabel}
                 </Link>
-            </p>
+            </div>
         </div>
     );
 }

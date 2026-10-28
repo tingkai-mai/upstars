@@ -4,8 +4,8 @@ import { formatMinutes, pluralize } from "@/lib/format";
 import { EmptyState, formatWeeks } from "@/app/syllabus/ui";
 import { loadProgress } from "../context";
 import { GoalsHeader } from "../goals-header";
-import { CompletionCheckbox } from "../completion-checkbox";
-import { CompletionTable, formatCompletedOn } from "../completion-table";
+import { CompletionRow } from "../completion-checkbox";
+import { CompletedOn, CompletionList, completionItemClass } from "../completion-table";
 
 export const metadata: Metadata = { title: "Worksheet progress" };
 
@@ -32,27 +32,24 @@ async function WorksheetProgress({ searchParams }: Pick<Props, "searchParams">) 
             {data.worksheets.length === 0 ? (
                 <EmptyState>This subject has no worksheets yet.</EmptyState>
             ) : (
-                <CompletionTable itemLabel="Worksheet">
+                <CompletionList label="Worksheets">
                     {data.worksheets.map((sheet) => {
                         const completedAt = data.completion.worksheets.get(sheet.id);
                         const weeks = sheet.concepts.length ? formatWeeks(sheet.concepts.map((c) => c.weekNumber)) : "No concepts";
                         return (
-                            <tr key={sheet.id} className="border-t border-zinc-200 dark:border-zinc-800">
-                                <td className="px-3 py-2.5 align-top">
-                                    <span className="block font-medium text-zinc-900 dark:text-zinc-50">{sheet.name}</span>
-                                    <span className="block text-sm text-zinc-600 dark:text-zinc-400">
+                            <li key={sheet.id} className={completionItemClass}>
+                                <CompletionRow kind="worksheet" studentId={student.id} itemId={sheet.id} done={Boolean(completedAt)} label={sheet.name} editable={data.canEdit}>
+                                    <span className="block text-lg font-medium text-zinc-900 dark:text-zinc-50">{sheet.name}</span>
+                                    <span className="block text-base text-zinc-600 dark:text-zinc-400">
                                         {weeks} · {pluralize(sheet.concepts.length, "concept")}
                                         {sheet.durationMin !== null && ` · ${formatMinutes(sheet.durationMin)}`}
-                                        {completedAt && ` · Done ${formatCompletedOn(completedAt)}`}
                                     </span>
-                                </td>
-                                <td className="px-3 py-2.5 text-center align-top">
-                                    <CompletionCheckbox kind="worksheet" studentId={student.id} itemId={sheet.id} done={Boolean(completedAt)} label={sheet.name} editable={data.canEdit} />
-                                </td>
-                            </tr>
+                                    {completedAt && <CompletedOn date={completedAt} />}
+                                </CompletionRow>
+                            </li>
                         );
                     })}
-                </CompletionTable>
+                </CompletionList>
             )}
         </>
     );

@@ -31,7 +31,7 @@ export const addButtonClass =
     "flex h-12 w-full items-center justify-center rounded-xl border-2 border-dashed border-zinc-300 text-base font-medium text-zinc-700 transition hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-50";
 
 export const inlineEditButtonClass =
-    "inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-zinc-100 px-3 text-sm font-medium text-zinc-800 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700";
+    "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-lg bg-zinc-100 px-3 text-base font-medium text-zinc-800 transition hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700";
 
 export function Field({ label, htmlFor, hint, children }: { label: string; htmlFor: string; hint?: string; children: ReactNode }) {
     return (

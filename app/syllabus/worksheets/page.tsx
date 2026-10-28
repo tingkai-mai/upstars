@@ -5,7 +5,7 @@ import { compactPrimaryButtonClass, inlineEditButtonClass } from "@/components/f
 import { PenIcon } from "@/components/icons";
 import { isAdmin, requireUser } from "@/lib/session";
 import { formatMinutes, pluralize } from "@/lib/format";
-import { listWorksheets, type WorksheetSummary } from "../queries";
+import { getSubjectPlan, listWorksheets, type Chapter, type WorksheetSummary } from "../queries";
 import { resolveSelection } from "../selection";
 import { SyllabusHeader } from "../syllabus-header";
 import { Accordion, EmptyState, formatWeeks } from "../ui";
@@ -28,7 +28,7 @@ async function WorksheetsTab({ searchParams }: Pick<Props, "searchParams">) {
     const [user, params] = await Promise.all([requireUser(), searchParams]);
     const selection = await resolveSelection(params);
     const subject = selection.subject;
-    const worksheets = subject ? await listWorksheets(subject.id) : [];
+    const [worksheets, plan] = subject ? await Promise.all([listWorksheets(subject.id), getSubjectPlan(subject.id)]) : [[], null];
     const canEdit = isAdmin(user);
 
     return (
@@ -36,7 +36,7 @@ async function WorksheetsTab({ searchParams }: Pick<Props, "searchParams">) {
             <SyllabusHeader tab="worksheets" selection={selection} canEdit={canEdit} />
 
             {!subject ? (
-                <EmptyState>No subjects yet.{canEdit && " Use Subjects above to add one."}</EmptyState>
+                <EmptyState>No subjects yet.{canEdit && " Use Edit levels & subjects above to add one."}</EmptyState>
             ) : (
                 <>
                     <div className="flex items-center justify-between gap-4">
@@ -51,9 +51,13 @@ async function WorksheetsTab({ searchParams }: Pick<Props, "searchParams">) {
                     {worksheets.length === 0 ? (
                         <EmptyState>No worksheets for this subject yet.</EmptyState>
                     ) : (
-                        <section aria-label="Worksheets" className="flex flex-col gap-3">
-                            {worksheets.map((sheet) => (
-                                <WorksheetAccordion key={sheet.id} sheet={sheet} canEdit={canEdit} />
+                        <section aria-label="Worksheets by chapter" className="flex flex-col gap-3">
+                            {groupByChapter(worksheets, plan?.chapters ?? []).map((group) => (
+                                <Accordion key={group.id} title={group.name} subtitle={`${group.weeks} · ${pluralize(group.sheets.length, "worksheet")}`}>
+                                    {group.sheets.map((sheet) => (
+                                        <WorksheetAccordion key={sheet.id} sheet={sheet} canEdit={canEdit} />
+                                    ))}
+                                </Accordion>
                             ))}
                         </section>
                     )}
@@ -63,11 +67,20 @@ async function WorksheetsTab({ searchParams }: Pick<Props, "searchParams">) {
     );
 }
 
+/** Worksheets under the chapter of their first week, in syllabus order; ones with no concepts come last. */
+function groupByChapter(worksheets: WorksheetSummary[], chapters: Chapter[]) {
+    const chapterByWeek = new Map(chapters.flatMap((c) => c.weeks.map((w) => [w.number, c.id] as const)));
+    const firstChapterId = (sheet: WorksheetSummary) => (sheet.concepts.length ? chapterByWeek.get(Math.min(...sheet.concepts.map((c) => c.weekNumber))) : undefined);
+    const groups = chapters.map((c) => ({ id: c.id, name: c.name, weeks: formatWeeks(c.weeks.map((w) => w.number)), sheets: worksheets.filter((sheet) => firstChapterId(sheet) === c.id) }));
+    const unplaced = worksheets.filter((sheet) => firstChapterId(sheet) === undefined);
+    return [...groups, { id: "none", name: "No chapter", weeks: "No concepts", sheets: unplaced }].filter((g) => g.sheets.length > 0);
+}
+
 function WorksheetAccordion({ sheet, canEdit }: { sheet: WorksheetSummary; canEdit: boolean }) {
     const perConcept = sheet.durationMin !== null && sheet.concepts.length > 0 ? sheet.durationMin / sheet.concepts.length : null;
 
     return (
-        <Accordion title={sheet.name} subtitle={`${sheet.concepts.length ? formatWeeks(sheet.concepts.map((c) => c.weekNumber)) : "No concepts"} · ${pluralize(sheet.concepts.length, "concept")} · ${sheet.durationMin === null ? "Time not set" : formatMinutes(sheet.durationMin)}`}>
+        <Accordion nested title={sheet.name} subtitle={`${sheet.concepts.length ? formatWeeks(sheet.concepts.map((c) => c.weekNumber)) : "No concepts"} · ${pluralize(sheet.concepts.length, "concept")} · ${sheet.durationMin === null ? "Time not set" : formatMinutes(sheet.durationMin)}`}>
             {sheet.concepts.length === 0 ? (
                 <p className="text-sm text-amber-700 dark:text-amber-400">This worksheet has no concepts left. Edit it to choose some.</p>
             ) : (

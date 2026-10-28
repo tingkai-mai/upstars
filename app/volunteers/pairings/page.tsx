@@ -31,8 +31,8 @@ async function Pairings({ searchParams }: Pick<PageProps<"/volunteers/pairings">
 
     return (
         <>
-            <PageHeader title="Volunteer management" back={{ href: "/", label: "Home" }} />
-            <VolunteerTabs active="pairings" action={admin && <NewPairingButton tutors={tutors} students={unpairedStudents} />} />
+            <PageHeader title="Volunteer management" back={{ href: "/", label: "Home" }} action={admin && <NewPairingButton tutors={tutors} students={unpairedStudents} />} />
+            <VolunteerTabs active="pairings" />
             {/* Keyed so a new ?q= link resets the filter, even if this page was kept alive */}
             <PairingList key={initialQuery} pairings={pairings} initialQuery={initialQuery} canEdit={admin} />
         </>

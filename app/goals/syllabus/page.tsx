@@ -5,7 +5,7 @@ import { Accordion, EmptyState, formatWeeks } from "@/app/syllabus/ui";
 import type { Chapter, Week } from "@/app/syllabus/queries";
 import { loadProgress, type ProgressData } from "../context";
 import { GoalsHeader, percent, ProgressBar } from "../goals-header";
-import { CompletionCheckbox, WeekCompletionCheckbox } from "../completion-checkbox";
+import { CompletionRow, WeekCompletionButton } from "../completion-checkbox";
 import { ConceptCoverage } from "../concept-coverage";
 import { listConceptLessons, type ConceptLesson } from "@/app/check-in/queries";
 
@@ -27,15 +27,21 @@ async function SyllabusProgress({ searchParams }: Pick<Props, "searchParams">) {
     const progress = await loadProgress(await searchParams);
     const { student, data } = progress;
     const conceptLessons = student && data ? await listConceptLessons(student.id, data.plan.subject.id) : new Map<string, ConceptLesson[]>();
+    // Open the chapter the student is up to: the first with a concept not yet done
+    const currentChapterId = data?.plan.chapters.find((c) => c.weeks.some((w) => w.concepts.some((concept) => !data.completion.concepts.has(concept.id))))?.id;
 
     return (
         <>
             <GoalsHeader tab="syllabus" progress={progress} />
             {student && data && (
                 <section aria-label="Chapters" className="flex flex-col gap-3">
+                    <p className="text-base text-zinc-700 dark:text-zinc-300">
+                        <span className="font-medium text-emerald-800 dark:text-emerald-300">Taught</span> means a tutor covered it in a checked-in lesson.{" "}
+                        <span className="font-medium text-zinc-900 dark:text-zinc-50">Done</span> means it&apos;s finished.
+                    </p>
                     {data.plan.chapters.length === 0 && <EmptyState>This subject has no chapters yet.</EmptyState>}
                     {data.plan.chapters.map((chapter) => (
-                        <ChapterProgress key={chapter.id} chapter={chapter} studentId={student.id} data={data} conceptLessons={conceptLessons} />
+                        <ChapterProgress key={chapter.id} chapter={chapter} studentId={student.id} data={data} conceptLessons={conceptLessons} defaultOpen={chapter.id === currentChapterId} />
                     ))}
                 </section>
             )}
@@ -44,25 +50,27 @@ async function SyllabusProgress({ searchParams }: Pick<Props, "searchParams">) {
 }
 
 type Lessons = Map<string, ConceptLesson[]>;
+type ChapterProps = { chapter: Chapter; studentId: string; data: ProgressData; conceptLessons: Lessons; defaultOpen: boolean };
 
-function ChapterProgress({ chapter, studentId, data, conceptLessons }: { chapter: Chapter; studentId: string; data: ProgressData; conceptLessons: Lessons }) {
+function ChapterProgress({ chapter, studentId, data, conceptLessons, defaultOpen }: ChapterProps) {
     const concepts = chapter.weeks.flatMap((w) => w.concepts);
     const done = concepts.filter((c) => data.completion.concepts.has(c.id)).length;
     const value = percent(done, concepts.length);
 
     return (
         <Accordion
+            defaultOpen={defaultOpen}
             title={
                 <span className="flex items-center justify-between gap-3">
                     {chapter.name}
-                    <span className={`shrink-0 text-sm tabular-nums ${value === 100 ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-600 dark:text-zinc-400"}`}>{value}%</span>
+                    <span className={`shrink-0 text-base tabular-nums ${value === 100 ? "text-emerald-700 dark:text-emerald-400" : "text-zinc-600 dark:text-zinc-400"}`}>{value}%</span>
                 </span>
             }
             subtitle={
                 <span className="mt-1 flex flex-col gap-1.5">
                     <ProgressBar value={value} label={`${chapter.name} progress`} />
                     <span>
-                        {formatWeeks(chapter.weeks.map((w) => w.number))} · {done}/{pluralize(concepts.length, "concept")} done
+                        {formatWeeks(chapter.weeks.map((w) => w.number))} · {done} of {pluralize(concepts.length, "concept")} done
                     </span>
                 </span>
             }
@@ -70,75 +78,47 @@ function ChapterProgress({ chapter, studentId, data, conceptLessons }: { chapter
             {chapter.weeks.length === 0 ? (
                 <EmptyState>This chapter has no weeks yet.</EmptyState>
             ) : (
-                <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
-                    <table className="w-full border-collapse text-left text-sm">
-                        <thead className="bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-                            <tr>
-                                <th scope="col" className="w-24 px-3 py-2 font-medium sm:w-32">
-                                    Week
-                                </th>
-                                <th scope="col" className="px-3 py-2 font-medium">
-                                    Concept
-                                </th>
-                                <th scope="col" className="w-20 px-2 py-2 font-medium">
-                                    Covered
-                                </th>
-                                <th scope="col" className="w-14 px-3 py-2 text-center font-medium">
-                                    Done
-                                </th>
-                            </tr>
-                        </thead>
-                        {chapter.weeks.map((week) => (
-                            <WeekProgress key={week.id} week={week} studentId={studentId} data={data} conceptLessons={conceptLessons} />
-                        ))}
-                    </table>
-                </div>
+                chapter.weeks.map((week) => <WeekProgress key={week.id} week={week} studentId={studentId} data={data} conceptLessons={conceptLessons} />)
             )}
         </Accordion>
     );
 }
 
+/** A week's heading, then one row per concept: tick and name, with when it was taught underneath. */
 function WeekProgress({ week, studentId, data, conceptLessons }: { week: Week; studentId: string; data: ProgressData; conceptLessons: Lessons }) {
     const done = week.concepts.filter((c) => data.completion.concepts.has(c.id)).length;
-    const weekCell = (
-        <th scope="rowgroup" rowSpan={Math.max(1, week.concepts.length)} className="border-r border-zinc-200 px-3 py-2.5 align-top font-normal dark:border-zinc-800">
-            <span className="block whitespace-nowrap font-semibold text-zinc-900 dark:text-zinc-50">Week {week.number}</span>
-            <span className="mt-1 flex items-center gap-2">
-                {data.canEdit && week.concepts.length > 1 && (
-                    <WeekCompletionCheckbox studentId={studentId} conceptIds={week.concepts.map((c) => c.id)} doneCount={done} weekNumber={week.number} editable />
-                )}
-                <span className="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">
-                    {done}/{week.concepts.length}
-                </span>
-            </span>
-        </th>
-    );
 
     return (
-        <tbody className="border-t border-zinc-200 dark:border-zinc-800">
-            {week.concepts.length === 0 && (
-                <tr>
-                    {weekCell}
-                    <td colSpan={3} className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400">
-                        No concepts yet
-                    </td>
-                </tr>
+        <section className="flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                    Week {week.number}{" "}
+                    <span className="font-normal text-zinc-600 dark:text-zinc-400">
+                        · {done} of {week.concepts.length} done
+                    </span>
+                </h4>
+                {data.canEdit && week.concepts.length > 1 && <WeekCompletionButton studentId={studentId} conceptIds={week.concepts.map((c) => c.id)} doneCount={done} weekNumber={week.number} />}
+            </div>
+            {week.concepts.length === 0 ? (
+                <p className="px-3 py-3 text-base text-zinc-600 dark:text-zinc-400">No concepts yet</p>
+            ) : (
+                <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                    {week.concepts.map((concept) => {
+                        const isDone = data.completion.concepts.has(concept.id);
+                        return (
+                            <li key={concept.id} className="flex flex-col gap-1 px-3 py-2.5">
+                                <CompletionRow kind="concept" studentId={studentId} itemId={concept.id} done={isDone} label={concept.name} editable={data.canEdit}>
+                                    <span className="block pt-0.5 text-base text-zinc-900 dark:text-zinc-100">{concept.name}</span>
+                                </CompletionRow>
+                                {/* Outside the row's label, since it's a button of its own */}
+                                <div className={data.canEdit ? "pl-10" : ""}>
+                                    <ConceptCoverage conceptName={concept.name} lessons={conceptLessons.get(concept.id) ?? []} completedAt={data.completion.concepts.get(concept.id)} />
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
             )}
-            {week.concepts.map((concept, index) => {
-                const isDone = data.completion.concepts.has(concept.id);
-                return (
-                    <tr key={concept.id} className="border-t border-zinc-100 first:border-t-0 dark:border-zinc-800/60">
-                        {index === 0 && weekCell}
-                        <td className={`px-3 py-2.5 align-top ${isDone ? "text-zinc-600 dark:text-zinc-400" : "text-zinc-800 dark:text-zinc-200"}`}>{concept.name}</td>
-                        <td className="px-2 py-1.5 align-top">
-                            <ConceptCoverage conceptName={concept.name} lessons={conceptLessons.get(concept.id) ?? []} completedAt={data.completion.concepts.get(concept.id)} />
-                        </td>
-                        <td className="px-3 py-2.5 text-center align-top">
-                            <CompletionCheckbox kind="concept" studentId={studentId} itemId={concept.id} done={isDone} label={concept.name} editable={data.canEdit} />
-                        </td>
-                    </tr>
-                );
-            })}
-        </tbody>
+        </section>
     );
 }

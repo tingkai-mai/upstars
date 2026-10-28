@@ -18,7 +18,7 @@ export function SignOutButton() {
         <button
             onClick={signOut}
             disabled={pending}
-            className={`${secondaryButtonClass} disabled:opacity-60`}
+            className={`${secondaryButtonClass} h-12 w-full disabled:opacity-60`}
         >
             {pending ? "Signing out…" : "Sign out"}
         </button>

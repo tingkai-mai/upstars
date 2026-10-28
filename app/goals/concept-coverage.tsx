@@ -19,13 +19,13 @@ function shortDate(isoDate: string) {
     return new Date(`${isoDate}T00:00:00Z`).toLocaleDateString("en-SG", { day: "numeric", month: "short", timeZone: "UTC" });
 }
 
-/** The Covered cell: when the concept was first covered, opening the lessons that covered it. A dash if never. */
+/** When the concept was first taught, opening the lessons that taught it. Nothing if it never was. */
 export function ConceptCoverage({ conceptName, lessons, completedAt }: Props) {
     const [open, setOpen] = useState(false);
-    if (lessons.length === 0 && !completedAt) return <span className="text-zinc-400">—</span>;
+    if (lessons.length === 0 && !completedAt) return null;
 
     // Ticked done by hand, with no check-in behind it
-    const label = lessons.length ? shortDate(lessons[0].lessonDate) : "Done";
+    const label = lessons.length ? `Taught ${shortDate(lessons[0].lessonDate)}` : "No lesson recorded";
 
     return (
         <>
@@ -33,16 +33,17 @@ export function ConceptCoverage({ conceptName, lessons, completedAt }: Props) {
                 type="button"
                 onClick={() => setOpen(true)}
                 aria-label={`When ${conceptName} was covered`}
-                className="inline-flex h-9 items-center gap-1 rounded-lg bg-emerald-50 px-2 text-sm font-medium whitespace-nowrap text-emerald-800 tabular-nums transition hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-950"
+                className="inline-flex min-h-10 items-center gap-1 rounded-lg bg-emerald-50 px-3 text-base font-medium whitespace-nowrap text-emerald-800 tabular-nums transition hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-950"
             >
                 {label}
-                {lessons.length > 1 && <span className="text-emerald-600 dark:text-emerald-400">+{lessons.length - 1}</span>}
+                {lessons.length > 1 && <span className="font-normal">· {lessons.length} lessons</span>}
+                <span aria-hidden>›</span>
             </button>
             {open && (
                 <Modal title={conceptName} onClose={() => setOpen(false)} closeLabel="Close">
                     <p className="-mt-2 text-base text-zinc-600 dark:text-zinc-400">
-                        {lessons.length ? `Covered in ${pluralize(lessons.length, "lesson")}` : "Not covered in a checked-in lesson"}
-                        {completedAt && ` · marked done ${formatCompletedOn(completedAt)}`}
+                        {lessons.length ? `Taught in ${pluralize(lessons.length, "lesson")}` : "Not taught in a checked-in lesson"}
+                        {completedAt && ` · ticked done on ${formatCompletedOn(completedAt)}`}
                     </p>
                     {lessons.length > 0 && (
                         <ol className="flex flex-col gap-2">

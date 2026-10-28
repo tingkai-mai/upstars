@@ -21,6 +21,13 @@ const MODULES: Module[] = [
     { title: "Upstars resources", description: "Guides and materials", href: "/resources", Icon: LinkIcon },
 ];
 
+// Students only see their own profile in volunteer management, and get plainer names
+const STUDENT_MODULES: Record<string, Partial<Module>> = {
+    "Volunteer management": { title: "My profile", description: "Your tutor, goals and past lessons" },
+    "Syllabus management": { title: "Syllabus", description: "What you'll learn, week by week" },
+    "Goal tracking": { title: "My progress", description: "Your goals and what you've covered" },
+};
+
 const tileClass = "flex min-h-20 items-center gap-4 rounded-2xl border p-4 text-left sm:p-5";
 const tileIconClass = "flex size-12 shrink-0 items-center justify-center rounded-xl";
 
@@ -40,20 +47,16 @@ async function Dashboard({ searchParams }: Pick<Props, "searchParams">) {
     const user = await requireUser();
     const canCheckIn = user.role === "tutor" || user.role === "admin";
     const [[account], guidePages] = await Promise.all([db.select({ onboardedAt: userTable.onboardedAt }).from(userTable).where(eq(userTable.id, user.id)), loadGuide(isUserRole(user.role) ? user.role : "student")]);
-    // Students only see their own profile in volunteer management
-    const modules = user.role === "student" ? MODULES.map((m) => (m.href === "/volunteers" ? { ...m, title: "My profile", description: "Your tutor, goals and past lessons", href: `/volunteers/${user.id}` } : m)) : MODULES;
+    const modules = user.role === "student" ? MODULES.map((m) => ({ ...m, ...STUDENT_MODULES[m.title], ...(m.href === "/volunteers" && { href: `/volunteers/${user.id}` }) })) : MODULES;
 
     return (
         <>
             <header className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                     <p className="text-base text-zinc-600 dark:text-zinc-400">Upstars Assistant</p>
-                    <h1 className="truncate text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Hi, {user.name}</h1>
+                    <h1 className="text-3xl font-semibold tracking-tight break-words text-zinc-900 dark:text-zinc-50">Hi, {user.name}</h1>
                 </div>
-                <div className="flex shrink-0 gap-2">
-                    <OnboardingGuide pages={guidePages} seenIn={isDemoEmail(user.email) ? "browser" : "account"} seen={Boolean(account?.onboardedAt)} userId={user.id} />
-                    <SignOutButton />
-                </div>
+                <OnboardingGuide pages={guidePages} seenIn={isDemoEmail(user.email) ? "browser" : "account"} seen={Boolean(account?.onboardedAt)} userId={user.id} />
             </header>
 
             {canCheckIn && <CheckInSection viewer={user} params={await searchParams} />}
@@ -66,6 +69,9 @@ async function Dashboard({ searchParams }: Pick<Props, "searchParams">) {
                     {modules.map((module) => (module.href ? <ModuleLink key={module.title} module={module} href={module.href} /> : <DisabledModule key={module.title} module={module} />))}
                 </div>
             </nav>
+
+            {/* At the bottom, away from everyday buttons, so it isn't tapped by mistake */}
+            <SignOutButton />
         </>
     );
 }

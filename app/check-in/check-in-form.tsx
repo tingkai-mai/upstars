@@ -1,11 +1,11 @@
 "use client";
-import { useId, useState, useTransition, type ReactNode, type SubmitEvent } from "react";
-import { Field, FormError, inputClass, textareaClass } from "@/components/form";
+import { useEffect, useId, useState, useTransition, type ReactNode, type SubmitEvent } from "react";
+import { Field, FormError, inputClass, primaryButtonClass, secondaryButtonClass, textareaClass } from "@/components/form";
 import { CheckIcon } from "@/components/icons";
 import { pluralize } from "@/lib/format";
 import type { Chapter } from "@/app/syllabus/queries";
 import { ChapterPicker, DoneTag } from "@/app/syllabus/worksheets/worksheet-builder";
-import { useOnCheckInSaved } from "./check-in-dialog";
+import { useCheckInFormEvents } from "./check-in-dialog";
 import { formatLessonDate, MAX_REMARKS_LENGTH } from "./dates";
 import { formatRewards, MAX_POINTS_PER_REWARD, MAX_SCORE, REWARDS, totalScore, type RewardKey, type RewardPoints } from "./rewards";
 
@@ -27,7 +27,7 @@ type Props = {
 
 /** Ticks off what a lesson covered, one tab per kind of item, with Save pinned to the bottom of the modal. */
 export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds, worksheets, tests, today, action }: Props) {
-    const onSaved = useOnCheckInSaved();
+    const { onSaved, setDirty } = useCheckInFormEvents();
     // Concept, worksheet and test ids are all UUIDs, so one set holds every tick
     const [selected, setSelected] = useState<Set<string>>(() => new Set());
     const [rewards, setRewards] = useState<Partial<RewardPoints>>({});
@@ -46,6 +46,10 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
     // Undefined until every reward has points
     const chosenRewards = REWARDS.every((r) => rewards[r.key] !== undefined) ? (rewards as RewardPoints) : undefined;
     const score = chosenRewards && totalScore(chosenRewards);
+    const hasWork = selected.size > 0 || Object.keys(rewards).length > 0 || remarks.trim() !== "";
+
+    // Lets the modal ask before closing over unsaved work
+    useEffect(() => setDirty(hasWork), [hasWork, setDirty]);
 
     function toggle(ids: string[], checked: boolean) {
         setSelected((current) => {
@@ -97,6 +101,9 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
         { key: "rewards", label: "Rewards", badge: Boolean(chosenRewards) },
         { key: "remarks", label: "Remarks", badge: remarks.trim() !== "" },
     ];
+    const stepIndex = tabs.findIndex((t) => t.key === tab);
+    const nextTab = tabs[stepIndex + 1];
+    const missing = [!chosenRewards && "Rewards", !remarks.trim() && "Remarks"].filter(Boolean);
     const summary = [
         pluralize(conceptCount, "concept"),
         pluralize(worksheetCount, "worksheet"),
@@ -130,6 +137,10 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
                     </button>
                 ))}
             </div>
+
+            <p className="-mt-1 text-base text-zinc-600 dark:text-zinc-400" aria-live="polite">
+                Step {stepIndex + 1} of {tabs.length}: <span className="font-medium text-zinc-900 dark:text-zinc-50">{tabs[stepIndex].label}</span>
+            </p>
 
             {/* Inactive panels are hidden, not unmounted, so their ticks are still submitted */}
             <TabPanel id={`${tabsId}-concepts`} active={tab === "concepts"}>
@@ -180,16 +191,17 @@ export function CheckInForm({ studentName, subjectName, chapters, doneConceptIds
 
             <div className="sticky bottom-0 -mx-5 -mb-5 flex flex-col gap-3 border-t border-zinc-200 bg-white px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:-mb-6 sm:px-6 sm:pb-6 dark:border-zinc-800 dark:bg-zinc-950">
                 <FormError message={error} />
-                <div className="flex items-center gap-3">
-                    <p className="flex-1 text-sm text-zinc-600 dark:text-zinc-400" aria-live="polite">
-                        {summary}
-                    </p>
-                    <button
-                        type="submit"
-                        disabled={pending}
-                        className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 px-5 text-base font-medium text-white transition hover:bg-zinc-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-                    >
-                        {pending ? "Saving…" : "Check in"}
+                <p className="text-base text-zinc-700 dark:text-zinc-300" aria-live="polite">
+                    {missing.length ? <span className="font-medium text-amber-800 dark:text-amber-300">Still needed: {missing.join(", ")}</span> : summary}
+                </p>
+                <div className="flex gap-3">
+                    {nextTab && (
+                        <button type="button" onClick={() => setTab(nextTab.key)} aria-label={`Next: ${nextTab.label}`} className={`${secondaryButtonClass} h-12 flex-1`}>
+                            Next&nbsp;<span aria-hidden>›</span>
+                        </button>
+                    )}
+                    <button type="submit" disabled={pending} className={`${primaryButtonClass} flex-1`}>
+                        {pending ? "Saving…" : "Save check-in"}
                     </button>
                 </div>
             </div>

@@ -33,7 +33,7 @@ async function NewWorksheet({ searchParams }: Pick<Props, "searchParams">) {
         <>
             <PageHeader title="New worksheet" back={{ href: listHref, label: "Worksheets" }} />
             {!plan ? (
-                <EmptyState>Add a subject first, using Manage subjects.</EmptyState>
+                <EmptyState>Add a subject first, using Edit levels &amp; subjects on the Syllabus page.</EmptyState>
             ) : (
                 <>
                     <p className="-mt-3 text-sm text-zinc-600 dark:text-zinc-400">

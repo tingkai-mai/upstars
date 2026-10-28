@@ -60,26 +60,20 @@ export function OnboardingGuide({ pages, seenIn, seen, userId }: Props) {
                 Guide
             </button>
             {open && (
-                <Modal title={current.title} onClose={close} closeLabel="Skip">
+                <Modal title={current.title} onClose={close} closeLabel="Close guide">
                     <div className="flex min-h-48 flex-col gap-3 text-lg text-zinc-800 dark:text-zinc-300">
                         {current.blocks.map((block, index) => (
                             <Block key={index} block={block} />
                         ))}
                     </div>
 
-                    <div className="flex items-center justify-center gap-1.5" aria-label={`Page ${page + 1} of ${pages.length}`} role="img">
-                        {pages.map((_, index) => (
-                            <span key={index} className={`size-2.5 rounded-full ${index === page ? "bg-zinc-900 dark:bg-zinc-50" : "bg-zinc-300 dark:bg-zinc-700"}`} />
-                        ))}
-                    </div>
+                    <p className="text-center text-base text-zinc-600 dark:text-zinc-400">
+                        Page {page + 1} of {pages.length}
+                    </p>
 
                     <div className="flex gap-3">
                         {page > 0 && (
-                            <button
-                                type="button"
-                                onClick={() => setPage(page - 1)}
-                                className="inline-flex h-12 flex-1 items-center justify-center rounded-xl border border-zinc-300 px-5 text-base font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-                            >
+                            <button type="button" onClick={() => setPage(page - 1)} className={`${secondaryButtonClass} h-12 flex-1`}>
                                 Back
                             </button>
                         )}

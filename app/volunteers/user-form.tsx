@@ -1,7 +1,7 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Field, FormError, inputClass, primaryButtonClass, selectClass, selectStyle } from "@/components/form";
-import { MIN_PASSWORD_LENGTH, ROLE_LABELS, USER_ROLES } from "@/lib/users";
+import { isUserRole, MIN_PASSWORD_LENGTH, ROLE_LABELS, USER_ROLES } from "@/lib/users";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import type { ActionState, UserFormValues } from "./actions";
 
@@ -19,6 +19,9 @@ const resetWhenHidden = (form: HTMLFormElement | null) => () => form?.reset();
 
 export function UserForm({ action, defaults, mode, roleLocked = false }: Props) {
     const [state, dispatch, pending] = useActionState(action, {});
+    const [role, setRole] = useState(defaults.role);
+    // Like the fields, the chosen role resets when Next hides this page
+    useEffect(() => () => setRole(defaults.role), [defaults.role]);
 
     return (
         <form onSubmit={submitWithoutReset(dispatch)} ref={resetWhenHidden} className="flex flex-col gap-5">
@@ -41,8 +44,8 @@ export function UserForm({ action, defaults, mode, roleLocked = false }: Props) 
                 />
             </Field>
 
-            <Field label="Role" htmlFor="role" hint={roleLocked ? "You can't change your own role." : "Changing a role removes the user's existing pairings."}>
-                <select id="role" name="role" defaultValue={defaults.role} disabled={roleLocked} className={selectClass} style={selectStyle}>
+            <Field label="Role" htmlFor="role" hint={roleLocked ? "You can't change your own role." : undefined}>
+                <select id="role" name="role" value={role} onChange={(event) => isUserRole(event.target.value) && setRole(event.target.value)} disabled={roleLocked} className={selectClass} style={selectStyle}>
                     {USER_ROLES.map((option) => (
                         <option key={option} value={option}>
                             {ROLE_LABELS[option]}
@@ -51,6 +54,11 @@ export function UserForm({ action, defaults, mode, roleLocked = false }: Props) 
                 </select>
                 {/* Disabled selects aren't submitted */}
                 {roleLocked && <input type="hidden" name="role" value={defaults.role} />}
+                {mode === "edit" && role !== defaults.role && (
+                    <p role="alert" className="rounded-xl bg-amber-50 px-4 py-3 text-base text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+                        Changing their role removes their existing pairings when you save.
+                    </p>
+                )}
             </Field>
 
             <Field label="Current level (optional)" htmlFor="currentLevel" hint="Mainly for students.">
@@ -58,7 +66,7 @@ export function UserForm({ action, defaults, mode, roleLocked = false }: Props) 
             </Field>
 
             {mode === "create" && (
-                <Field label="Temporary password" htmlFor="password" hint={`At least ${MIN_PASSWORD_LENGTH} characters. Share it with the user so they can sign in.`}>
+                <Field label="Temporary password" htmlFor="password" hint={`At least ${MIN_PASSWORD_LENGTH} characters. Write it down or copy it: you'll need to give it to them so they can sign in.`}>
                     <input id="password" name="password" type="text" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} required className={inputClass} />
                 </Field>
             )}
