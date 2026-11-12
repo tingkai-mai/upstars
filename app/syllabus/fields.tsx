@@ -30,7 +30,7 @@ export function WeekFields({ defaults, chapters }: WeekFieldsProps) {
     return (
         <>
             <NumberField name="number" label="Week number" defaultValue={defaults.number} min={1} />
-            <NumberField name="durationMin" label="Teaching time (minutes)" defaultValue={defaults.durationMin} min={0} hint="Split evenly across the week's concepts." />
+            <TeachingTimeField defaultValue={defaults.durationMin} />
             {chapters && (
                 <Field label="Chapter" htmlFor="chapterId">
                     <select id="chapterId" name="chapterId" defaultValue={defaults.chapterId} className={selectClass} style={selectStyle}>
@@ -44,6 +44,10 @@ export function WeekFields({ defaults, chapters }: WeekFieldsProps) {
             )}
         </>
     );
+}
+
+export function TeachingTimeField({ defaultValue }: { defaultValue?: number }) {
+    return <NumberField name="durationMin" label="Teaching time (minutes)" defaultValue={defaultValue} min={0} hint="Split evenly across the week's concepts." />;
 }
 
 export function ConceptFields({ defaultName }: { defaultName?: string }) {

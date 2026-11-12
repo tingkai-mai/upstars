@@ -38,6 +38,16 @@ What's taught in each subject, week by week: chapters, concepts, worksheets and 
 
 Quarterly goals for each subject, and how much of the syllabus has been covered so far for each student.
 
+## A syllabus for each student [admin, tutor]
+
+Every student starts on the standard syllabus. If your student needs something different, open **Goals & progress**, then the **Syllabus** tab, and tap **Customise**. You can then:
+
+- move chapters, weeks and concepts into a different order
+- take out what they don't need, and add it back later
+- add weeks, or new concepts just for them
+
+Their Done ticks and past lessons stay as they are. **Reset to standard syllabus** undoes it all.
+
 ## My progress [student]
 
 Your goals for each exam, and a tick for every concept, worksheet and test you've finished. Your tutor adds the ticks after your lessons.

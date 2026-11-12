@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, max } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, max, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import { checkIn, checkInConcept, checkInTest, checkInWorksheet, concept, subject, test, user, week, worksheet } from "@/db/schema";
@@ -48,9 +48,10 @@ export async function listPastCheckIns(studentId: string, limit = 50): Promise<P
             .select({ checkInId: checkInConcept.checkInId, name: concept.name })
             .from(checkInConcept)
             .innerJoin(concept, eq(checkInConcept.conceptId, concept.id))
-            .innerJoin(week, eq(concept.weekId, week.id))
+            // Left join: concepts added for one student have no standard week, and are listed last
+            .leftJoin(week, eq(concept.weekId, week.id))
             .where(inArray(checkInConcept.checkInId, ids))
-            .orderBy(asc(week.number), asc(concept.position)),
+            .orderBy(sql`${week.number} NULLS LAST`, asc(concept.position)),
         db
             .select({ checkInId: checkInWorksheet.checkInId, name: worksheet.name })
             .from(checkInWorksheet)

@@ -64,6 +64,15 @@ async function SyllabusTab({ searchParams }: Pick<Props, "searchParams">) {
                         </div>
                     )}
 
+                    {user.role === "tutor" && (
+                        <p className="text-base text-zinc-700 dark:text-zinc-300">
+                            This is the standard syllabus. To change it for one of your students, open{" "}
+                            <Link href={`/goals/syllabus?subject=${plan.subject.id}`} className="font-medium text-violet-800 underline underline-offset-2 dark:text-violet-300">
+                                Goals &amp; progress → Syllabus
+                            </Link>{" "}
+                            and tap Customise.
+                        </p>
+                    )}
                     {plan.chapters.length === 0 && <EmptyState>No chapters yet.{editing ? " Add one below." : ""}</EmptyState>}
                     <section aria-label="Chapters" className="flex flex-col gap-3">
                         {plan.chapters.map((chapter, index) => (
@@ -134,7 +143,7 @@ function ChapterTable({ chapter, plan, editing, defaultOpen }: { chapter: Chapte
                         remove={{
                             action: actions.deleteChapter.bind(null, chapter.id),
                             label: "Delete chapter",
-                            confirm: `Delete ${chapter.name}? Its ${pluralize(chapter.weeks.length, "week")} and their concepts will be deleted too, and it will be removed from any tests.`,
+                            confirm: `Delete ${chapter.name}? Its ${pluralize(chapter.weeks.length, "week")} and their concepts will be deleted too, and it will be removed from any tests and students' custom syllabuses.`,
                         }}
                     >
                         <ChapterFields defaultName={chapter.name} />
@@ -187,7 +196,7 @@ function WeekBlock({ week, editing, chapterOptions }: { week: Week; editing: boo
                         remove={{
                             action: actions.deleteWeek.bind(null, week.id),
                             label: "Delete week",
-                            confirm: `Delete week ${week.number}? Its ${pluralize(week.concepts.length, "concept")} will be deleted too, and removed from any worksheets.`,
+                            confirm: `Delete week ${week.number}? Its ${pluralize(week.concepts.length, "concept")} will be deleted too, and removed from any worksheets and students' custom syllabuses.`,
                         }}
                     >
                         <WeekFields defaults={week} chapters={chapterOptions} />
@@ -217,7 +226,7 @@ function WeekBlock({ week, editing, chapterOptions }: { week: Week; editing: boo
                                     triggerClassName={inlineEditButtonClass}
                                     submitLabel="Save concept"
                                     action={actions.updateConcept.bind(null, concept.id)}
-                                    remove={{ action: actions.deleteConcept.bind(null, concept.id), label: "Delete concept", confirm: `Delete “${concept.name}”? It will also be removed from any worksheets.` }}
+                                    remove={{ action: actions.deleteConcept.bind(null, concept.id), label: "Delete concept", confirm: `Delete “${concept.name}”? It will also be removed from any worksheets and students' custom syllabuses.` }}
                                 >
                                     <ConceptFields defaultName={concept.name} />
                                 </FormDialog>

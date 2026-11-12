@@ -2,18 +2,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { conceptCompletion, goal, testCompletion, worksheetCompletion } from "@/db/schema";
-import { getSession } from "@/lib/session";
-import { canEditStudent } from "@/lib/students";
-import { assertFound, optionalWholeNumber, runMutation, wholeNumber, type FormResult } from "@/lib/form-data";
-
-const NOT_ALLOWED: FormResult = { error: "Only admins and this student's tutors can update their progress." };
-
-/** Runs a change to a student's progress if the signed-in user may edit that student. */
-async function asStudentEditor(studentId: string, work: (recordedBy: string) => Promise<unknown>, duplicateMessage?: string): Promise<FormResult> {
-    const session = await getSession();
-    if (!session || !(await canEditStudent(session.user, studentId))) return NOT_ALLOWED;
-    return runMutation(() => work(session.user.id), duplicateMessage);
-}
+import { assertFound, optionalWholeNumber, wholeNumber, type FormResult } from "@/lib/form-data";
+import { asStudentEditor } from "./permissions";
 
 // Completion
 

@@ -96,7 +96,7 @@ async function createSubjectPlan(subjectId, source) {
     for (const row of concepts.filter((c) => weekIds.has(c.week))) {
         const position = (positions.get(row.week) ?? 0) + 1;
         positions.set(row.week, position);
-        await client.query(`INSERT INTO concept (week_id, name, position) VALUES ($1, $2, $3)`, [weekIds.get(row.week), row.concept, position]);
+        await client.query(`INSERT INTO concept (subject_id, week_id, name, position) VALUES ($1, $2, $3, $4)`, [subjectId, weekIds.get(row.week), row.concept, position]);
     }
     console.log(`  created ${chapterIds.size} chapters, ${weekIds.size} weeks, ${concepts.filter((c) => weekIds.has(c.week)).length} concepts`);
 }

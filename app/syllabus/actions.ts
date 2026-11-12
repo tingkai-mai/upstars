@@ -88,14 +88,18 @@ export async function deleteWeek(id: string) {
 // Concepts
 
 export async function createConcept(weekId: string, formData: FormData) {
-    return mutate(() =>
-        db.insert(concept).values({
+    return mutate(async () => {
+        const name = text(formData, "name", "Concept");
+        const [found] = await db.select({ subjectId: week.subjectId }).from(week).where(eq(week.id, weekId));
+        assertFound(found ? [found] : []);
+        await db.insert(concept).values({
+            subjectId: found.subjectId,
             weekId,
-            name: text(formData, "name", "Concept"),
+            name,
             // Append to the end of the week
             position: sql`(SELECT COALESCE(MAX(${concept.position}), 0) + 1 FROM ${concept} WHERE ${concept.weekId} = ${weekId})`,
-        }),
-    );
+        });
+    });
 }
 
 export async function updateConcept(id: string, formData: FormData) {
@@ -115,13 +119,15 @@ export async function moveConcept(id: string, direction: "up" | "down") {
         db.transaction(async (tx) => {
             if (direction !== "up" && direction !== "down") throw new InvalidInput("Invalid direction.");
             const [target] = await tx.select({ weekId: concept.weekId }).from(concept).where(eq(concept.id, id));
-            assertFound(target ? [target] : []);
+            // Only standard concepts have a week; concepts added for one student are edited from their syllabus
+            const weekId = target?.weekId;
+            if (!weekId) throw new InvalidInput("This item no longer exists. Refresh and try again.");
 
             // Lock the week's concepts so concurrent moves can't interleave
             const ordered = await tx
                 .select({ id: concept.id, position: concept.position })
                 .from(concept)
-                .where(eq(concept.weekId, target.weekId))
+                .where(eq(concept.weekId, weekId))
                 .orderBy(asc(concept.position), asc(concept.createdAt))
                 .for("update");
             const from = ordered.findIndex((c) => c.id === id);

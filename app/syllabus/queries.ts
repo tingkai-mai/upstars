@@ -1,13 +1,16 @@
-import { asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { chapter, concept, subject, test, testChapter, week, worksheet, worksheetConcept } from "@/db/schema";
+import { chapter, concept, studentSyllabus, studentWeek, studentWeekConcept, subject, test, testChapter, week, worksheet, worksheetConcept } from "@/db/schema";
 import type { TestType } from "@/lib/tests";
 
 export type Subject = { id: string; level: string; name: string };
-export type Concept = { id: string; name: string };
+/** addedForStudent: added by a tutor to one student's custom syllabus, rather than part of the standard one */
+export type Concept = { id: string; name: string; addedForStudent?: boolean };
 export type Week = { id: string; chapterId: string; number: number; durationMin: number; concepts: Concept[] };
 export type Chapter = { id: string; name: string; weeks: Week[] };
 export type SubjectPlan = { subject: Subject; chapters: Chapter[] };
+/** A student's syllabus for a subject: their custom one, or the standard one. standard is always the subject's standard plan. */
+export type StudentPlan = SubjectPlan & { custom: boolean; standard: SubjectPlan };
 export type WorksheetSummary = { id: string; name: string; durationMin: number | null; concepts: (Concept & { weekNumber: number })[] };
 export type TestSummary = { id: string; name: string; type: TestType; durationMin: number | null; chapterIds: string[] };
 
@@ -30,7 +33,7 @@ export async function getSubjectPlan(subjectId: string): Promise<SubjectPlan | n
             .where(eq(week.subjectId, subjectId))
             .orderBy(asc(week.number)),
         db
-            .select({ id: concept.id, name: concept.name, weekId: concept.weekId })
+            .select({ id: concept.id, name: concept.name, weekId: week.id })
             .from(concept)
             .innerJoin(week, eq(concept.weekId, week.id))
             .where(eq(week.subjectId, subjectId))
@@ -41,12 +44,64 @@ export async function getSubjectPlan(subjectId: string): Promise<SubjectPlan | n
     const weekById = new Map<string, Week>(weeks.map((w) => [w.id, { ...w, concepts: [] }]));
     for (const { weekId, ...item } of concepts) weekById.get(weekId)?.concepts.push(item);
 
-    const chapterList: Chapter[] = chapters.map((c) => ({ ...c, weeks: [...weekById.values()].filter((w) => w.chapterId === c.id) }));
-    // Order chapters by their first week; chapters without weeks go last
-    const firstWeek = (c: Chapter) => c.weeks[0]?.number ?? Infinity;
-    chapterList.sort((a, b) => firstWeek(a) - firstWeek(b));
+    return { subject: found, chapters: groupByChapter(chapters, [...weekById.values()]) };
+}
 
-    return { subject: found, chapters: chapterList };
+/** Puts weeks (in order) under their chapters, ordering chapters by their first week; chapters without weeks go last. */
+function groupByChapter(chapters: { id: string; name: string }[], weeks: Week[]): Chapter[] {
+    const chapterList = chapters.map((c) => ({ ...c, weeks: weeks.filter((w) => w.chapterId === c.id) }));
+    const firstWeek = (c: Chapter) => c.weeks[0]?.number ?? Infinity;
+    return chapterList.sort((a, b) => firstWeek(a) - firstWeek(b));
+}
+
+/**
+ * The syllabus this student follows in a subject: their custom one if a tutor made one, otherwise the standard one.
+ * Custom weeks are numbered 1…n in their order.
+ */
+export async function getStudentPlan(studentId: string, subjectId: string): Promise<StudentPlan | null> {
+    const owner = and(eq(studentWeek.studentId, studentId), eq(studentWeek.subjectId, subjectId));
+    const [standard, [custom], weeks, concepts] = await Promise.all([
+        getSubjectPlan(subjectId),
+        db
+            .select({ studentId: studentSyllabus.studentId })
+            .from(studentSyllabus)
+            .where(and(eq(studentSyllabus.studentId, studentId), eq(studentSyllabus.subjectId, subjectId))),
+        db
+            .select({ id: studentWeek.id, chapterId: studentWeek.chapterId, durationMin: studentWeek.durationMin })
+            .from(studentWeek)
+            .where(owner)
+            .orderBy(asc(studentWeek.position), asc(studentWeek.createdAt)),
+        db
+            .select({ weekId: studentWeekConcept.studentWeekId, id: concept.id, name: concept.name, standardWeekId: concept.weekId })
+            .from(studentWeekConcept)
+            .innerJoin(studentWeek, eq(studentWeekConcept.studentWeekId, studentWeek.id))
+            .innerJoin(concept, eq(studentWeekConcept.conceptId, concept.id))
+            .where(owner)
+            .orderBy(asc(studentWeekConcept.position)),
+    ]);
+    if (!standard) return null;
+    if (!custom) return { ...standard, custom: false, standard };
+
+    const weekById = new Map<string, Week>(weeks.map((w, index) => [w.id, { ...w, number: index + 1, concepts: [] }]));
+    for (const { weekId, standardWeekId, ...item } of concepts) weekById.get(weekId)?.concepts.push({ ...item, addedForStudent: standardWeekId === null });
+    // A chapter with no weeks was taken out of this syllabus, so it isn't shown
+    const chapters = groupByChapter(standard.chapters, [...weekById.values()]).filter((c) => c.weeks.length > 0);
+    return { subject: standard.subject, chapters, custom: true, standard };
+}
+
+/** Concepts a tutor added for this student, including any since taken out of their syllabus. */
+export async function listStudentConcepts(studentId: string, subjectId: string): Promise<Concept[]> {
+    const rows = await db
+        .select({ id: concept.id, name: concept.name })
+        .from(concept)
+        .where(and(eq(concept.studentId, studentId), eq(concept.subjectId, subjectId)))
+        .orderBy(asc(concept.name));
+    return rows.map((c) => ({ ...c, addedForStudent: true }));
+}
+
+/** Concept id → the week it's taught in, in this plan. */
+export function weekNumberByConcept(plan: SubjectPlan) {
+    return new Map(plan.chapters.flatMap((c) => c.weeks.flatMap((w) => w.concepts.map((concept) => [concept.id, w.number] as const))));
 }
 
 /** A subject's worksheets with their concepts, ordered by the earliest week they cover. */

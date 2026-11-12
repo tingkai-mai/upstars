@@ -1,6 +1,6 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { concept, conceptCompletion, goal, subject, test, testCompletion, week, worksheet, worksheetCompletion } from "@/db/schema";
+import { concept, conceptCompletion, goal, subject, test, testCompletion, worksheet, worksheetCompletion } from "@/db/schema";
 
 export type Goal = { id: string; year: number; month: number; quarter: number; totalMarks: number; targetMarks: number; actualMarks: number | null };
 
@@ -11,8 +11,7 @@ export async function getCompletion(studentId: string, subjectId: string) {
             .select({ id: conceptCompletion.conceptId, completedAt: conceptCompletion.completedAt })
             .from(conceptCompletion)
             .innerJoin(concept, eq(conceptCompletion.conceptId, concept.id))
-            .innerJoin(week, eq(concept.weekId, week.id))
-            .where(and(eq(conceptCompletion.studentId, studentId), eq(week.subjectId, subjectId))),
+            .where(and(eq(conceptCompletion.studentId, studentId), eq(concept.subjectId, subjectId))),
         db
             .select({ id: worksheetCompletion.worksheetId, completedAt: worksheetCompletion.completedAt })
             .from(worksheetCompletion)

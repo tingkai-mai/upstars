@@ -1,6 +1,6 @@
 import { TEST_TYPE_LABELS } from "@/lib/tests";
 import { FilterPanel } from "@/components/filter-panel";
-import { getSubjectPlan, listTests, listWorksheets } from "@/app/syllabus/queries";
+import { getStudentPlan, listTests, listWorksheets, weekNumberByConcept } from "@/app/syllabus/queries";
 import { resolveSelection } from "@/app/syllabus/selection";
 import { SyllabusFilter } from "@/app/syllabus/syllabus-filter";
 import { EmptyState, formatWeeks } from "@/app/syllabus/ui";
@@ -65,8 +65,15 @@ async function CheckInContent({ students, student, params }: ContentProps & { pa
         );
     }
 
-    const [plan, worksheets, tests, completion] = await Promise.all([getSubjectPlan(subject.id), listWorksheets(subject.id), listTests(subject.id), getCompletion(student.id, subject.id)]);
+    const [plan, worksheets, tests, completion] = await Promise.all([
+        getStudentPlan(student.id, subject.id),
+        listWorksheets(subject.id),
+        listTests(subject.id),
+        getCompletion(student.id, subject.id),
+    ]);
     const chapterNames = new Map(plan?.chapters.map((c) => [c.id, c.name]));
+    // Week numbers from the student's own syllabus, which may differ from the standard one
+    const weekOf = plan ? weekNumberByConcept(plan) : new Map<string, number>();
 
     return (
         <>
@@ -77,6 +84,7 @@ async function CheckInContent({ students, student, params }: ContentProps & { pa
                         <span className="block text-lg font-semibold text-zinc-900 dark:text-zinc-50">{student.name}</span>
                         <span className="block text-base text-zinc-700 dark:text-zinc-300">
                             {subject.level} {subject.name}
+                            {plan?.custom && " · Custom syllabus"}
                         </span>
                     </span>
                     <span className="inline-flex h-11 shrink-0 items-center rounded-lg bg-white px-4 text-base font-medium text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-zinc-200">
@@ -101,7 +109,7 @@ async function CheckInContent({ students, student, params }: ContentProps & { pa
                 worksheets={worksheets.map((w) => ({
                     id: w.id,
                     name: w.name,
-                    detail: w.concepts.length ? formatWeeks(w.concepts.map((c) => c.weekNumber)) : undefined,
+                    detail: w.concepts.some((c) => weekOf.has(c.id)) ? formatWeeks(w.concepts.flatMap((c) => weekOf.get(c.id) ?? [])) : undefined,
                     done: completion.worksheets.has(w.id),
                 }))}
                 tests={tests.map((t) => ({

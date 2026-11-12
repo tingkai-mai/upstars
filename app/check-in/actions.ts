@@ -1,7 +1,7 @@
 "use server";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { checkIn, checkInConcept, checkInTest, checkInWorksheet, concept, conceptCompletion, test, testCompletion, week, worksheet, worksheetCompletion } from "@/db/schema";
+import { checkIn, checkInConcept, checkInTest, checkInWorksheet, concept, conceptCompletion, test, testCompletion, worksheet, worksheetCompletion } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { canCheckIn } from "@/lib/students";
 import { InvalidInput, runMutation, text, wholeNumber, type FormResult } from "@/lib/form-data";
@@ -56,7 +56,7 @@ async function readCheckIn(tx: Transaction, subjectId: string, formData: FormDat
 
     const [concepts, worksheets, tests] = await Promise.all([
         conceptIds.length
-            ? tx.select({ id: concept.id }).from(concept).innerJoin(week, eq(concept.weekId, week.id)).where(and(eq(week.subjectId, subjectId), inArray(concept.id, conceptIds)))
+            ? tx.select({ id: concept.id }).from(concept).where(and(eq(concept.subjectId, subjectId), inArray(concept.id, conceptIds)))
             : [],
         worksheetIds.length ? tx.select({ id: worksheet.id }).from(worksheet).where(and(eq(worksheet.subjectId, subjectId), inArray(worksheet.id, worksheetIds))) : [],
         testIds.length ? tx.select({ id: test.id }).from(test).where(and(eq(test.subjectId, subjectId), inArray(test.id, testIds))) : [],

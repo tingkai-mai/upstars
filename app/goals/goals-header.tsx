@@ -49,9 +49,11 @@ export function percent(done: number, total: number) {
 }
 
 function ProgressSummary({ data, isStudent }: { data: ProgressData; isStudent: boolean }) {
-    const conceptTotal = data.plan.chapters.reduce((sum, c) => sum + c.weeks.reduce((n, w) => n + w.concepts.length, 0), 0);
+    // Only concepts in the student's syllabus count, so ticks on concepts taken out of it don't push past 100%
+    const concepts = data.plan.chapters.flatMap((c) => c.weeks.flatMap((w) => w.concepts));
+    const conceptsDone = concepts.filter((c) => data.completion.concepts.has(c.id)).length;
     const tiles = [
-        { label: "Syllabus", done: data.completion.concepts.size, total: conceptTotal, detail: (done: number, total: number) => `${done} of ${pluralize(total, "concept")}` },
+        { label: "Syllabus", done: conceptsDone, total: concepts.length, detail: (done: number, total: number) => `${done} of ${pluralize(total, "concept")}` },
         { label: "Worksheets", done: data.completion.worksheets.size, total: data.worksheets.length, detail: (done: number, total: number) => `${done} of ${total} done` },
         { label: "Tests", done: data.completion.tests.size, total: data.tests.length, detail: (done: number, total: number) => `${done} of ${total} done` },
     ];

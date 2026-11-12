@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { pluralize } from "@/lib/format";
 import { Accordion, EmptyState, formatWeeks } from "@/app/syllabus/ui";
 import type { Chapter, Week } from "@/app/syllabus/queries";
@@ -8,6 +9,12 @@ import { GoalsHeader, percent, ProgressBar } from "../goals-header";
 import { CompletionRow, WeekCompletionButton } from "../completion-checkbox";
 import { ConceptCoverage } from "../concept-coverage";
 import { listConceptLessons, type ConceptLesson } from "@/app/check-in/queries";
+import { listStudentConcepts } from "@/app/syllabus/queries";
+import { EditListIcon } from "@/components/icons";
+import { secondaryButtonClass } from "@/components/form";
+import { ActionButton } from "./action-button";
+import { customiseSyllabus } from "./actions";
+import { PlanEditor } from "./plan-editor";
 
 export const metadata: Metadata = { title: "Syllabus progress" };
 
@@ -24,28 +31,86 @@ export default function SyllabusProgressPage({ searchParams }: Props) {
 }
 
 async function SyllabusProgress({ searchParams }: Pick<Props, "searchParams">) {
-    const progress = await loadProgress(await searchParams);
-    const { student, data } = progress;
-    const conceptLessons = student && data ? await listConceptLessons(student.id, data.plan.subject.id) : new Map<string, ConceptLesson[]>();
+    const params = await searchParams;
+    const progress = await loadProgress(params);
+    const { viewer, student, data } = progress;
+    if (!student || !data) return <GoalsHeader tab="syllabus" progress={progress} />;
+
+    const subjectId = data.plan.subject.id;
+    const query = new URLSearchParams({ student: student.id, subject: subjectId });
+    const viewHref = `/goals/syllabus?${query}`;
+    // Only a custom syllabus is edited here; the standard one is edited by admins in Syllabus
+    if (data.canEdit && data.plan.custom && params.edit === "1") {
+        const studentConcepts = await listStudentConcepts(student.id, subjectId);
+        return (
+            <>
+                <GoalsHeader tab="syllabus" progress={progress} />
+                <PlanEditor student={student} plan={data.plan} studentConcepts={studentConcepts} viewHref={viewHref} />
+            </>
+        );
+    }
+
+    const conceptLessons = await listConceptLessons(student.id, subjectId);
     // Open the chapter the student is up to: the first with a concept not yet done
-    const currentChapterId = data?.plan.chapters.find((c) => c.weeks.some((w) => w.concepts.some((concept) => !data.completion.concepts.has(concept.id))))?.id;
+    const currentChapterId = data.plan.chapters.find((c) => c.weeks.some((w) => w.concepts.some((concept) => !data.completion.concepts.has(concept.id))))?.id;
 
     return (
         <>
             <GoalsHeader tab="syllabus" progress={progress} />
-            {student && data && (
-                <section aria-label="Chapters" className="flex flex-col gap-3">
-                    <p className="text-base text-zinc-700 dark:text-zinc-300">
-                        <span className="font-medium text-emerald-800 dark:text-emerald-300">Taught</span> means a tutor covered it in a checked-in lesson.{" "}
-                        <span className="font-medium text-zinc-900 dark:text-zinc-50">Done</span> means it&apos;s finished.
-                    </p>
-                    {data.plan.chapters.length === 0 && <EmptyState>This subject has no chapters yet.</EmptyState>}
-                    {data.plan.chapters.map((chapter) => (
-                        <ChapterProgress key={chapter.id} chapter={chapter} studentId={student.id} data={data} conceptLessons={conceptLessons} defaultOpen={chapter.id === currentChapterId} />
-                    ))}
-                </section>
-            )}
+            <SyllabusSource
+                student={student}
+                isStudent={viewer.role === "student"}
+                custom={data.plan.custom}
+                canEdit={data.canEdit}
+                editHref={`${viewHref}&edit=1`}
+                customise={customiseSyllabus.bind(null, student.id, subjectId)}
+            />
+            <section aria-label="Chapters" className="flex flex-col gap-3">
+                <p className="text-base text-zinc-700 dark:text-zinc-300">
+                    <span className="font-medium text-emerald-800 dark:text-emerald-300">Taught</span> means a tutor covered it in a checked-in lesson.{" "}
+                    <span className="font-medium text-zinc-900 dark:text-zinc-50">Done</span> means it&apos;s finished.
+                </p>
+                {data.plan.chapters.length === 0 && <EmptyState>{data.plan.custom ? "This syllabus has no weeks yet." : "This subject has no chapters yet."}</EmptyState>}
+                {data.plan.chapters.map((chapter) => (
+                    <ChapterProgress key={chapter.id} chapter={chapter} studentId={student.id} data={data} conceptLessons={conceptLessons} defaultOpen={chapter.id === currentChapterId} />
+                ))}
+            </section>
         </>
+    );
+}
+
+type SourceProps = {
+    student: { name: string };
+    isStudent: boolean;
+    custom: boolean;
+    canEdit: boolean;
+    editHref: string;
+    customise: () => Promise<{ error?: string }>;
+};
+
+/** Which syllabus the student follows, and for their tutors, the button to customise or edit it. */
+function SyllabusSource({ student, isStudent, custom, canEdit, editHref, customise }: SourceProps) {
+    if (isStudent) return custom ? <p className="text-base text-zinc-700 dark:text-zinc-300">Your tutor made this syllabus just for you.</p> : null;
+
+    return (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-violet-50 p-3 sm:p-4 dark:bg-violet-950/50">
+            <p className="flex-1 text-base text-violet-950 dark:text-violet-100">
+                {custom ? `${student.name} has a custom syllabus, changed from the standard one.` : `${student.name} follows the standard syllabus.`}
+                {canEdit && !custom && " Customise it to reorder, add or remove weeks and concepts for them."}
+            </p>
+            {canEdit &&
+                (custom ? (
+                    <Link href={editHref} replace scroll={false} className={`${secondaryButtonClass} gap-2 bg-white dark:bg-zinc-950`}>
+                        <EditListIcon />
+                        Edit syllabus
+                    </Link>
+                ) : (
+                    <ActionButton action={customise} successHref={editHref} pendingLabel="Customising…" className={`${secondaryButtonClass} gap-2 bg-white dark:bg-zinc-950`}>
+                        <EditListIcon />
+                        Customise for {student.name}
+                    </ActionButton>
+                ))}
+        </div>
     );
 }
 

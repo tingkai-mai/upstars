@@ -44,6 +44,8 @@ export const week = pgTable(
     },
     (table) => [
         unique("week_subject_number_unique").on(table.subjectId, table.number),
+        // Target for concept's composite foreign key
+        unique("week_id_subject_unique").on(table.id, table.subjectId),
         // Composite key guarantees the week's chapter belongs to the same subject
         foreignKey({ name: "week_chapter_fk", columns: [table.chapterId, table.subjectId], foreignColumns: [chapter.id, chapter.subjectId] }).onDelete("cascade"),
         index("week_chapter_id_idx").on(table.chapterId),
@@ -52,17 +54,28 @@ export const week = pgTable(
     ],
 );
 
-/** A concept taught in a week. position orders concepts within the week. */
+/**
+ * A concept in a subject. Standard concepts sit in a week of the subject's syllabus; position orders them within it.
+ * A concept a tutor adds to one student's custom syllabus has no week and records that student instead.
+ */
 export const concept = pgTable(
     "concept",
     {
         id: uuid("id").primaryKey().defaultRandom(),
-        weekId: uuid("week_id").notNull().references(() => week.id, { onDelete: "cascade" }),
+        subjectId: uuid("subject_id").notNull().references(() => subject.id, { onDelete: "cascade" }),
+        weekId: uuid("week_id"),
+        studentId: text("student_id").references(() => user.id, { onDelete: "cascade" }),
         name: text("name").notNull(),
         position: integer("position").notNull(),
         createdAt: timestamp("created_at").defaultNow().notNull(),
     },
-    (table) => [index("concept_week_id_position_idx").on(table.weekId, table.position)],
+    (table) => [
+        // Composite key guarantees the concept's week belongs to the same subject
+        foreignKey({ name: "concept_week_fk", columns: [table.weekId, table.subjectId], foreignColumns: [week.id, week.subjectId] }).onDelete("cascade"),
+        index("concept_week_id_position_idx").on(table.weekId, table.position),
+        index("concept_subject_id_idx").on(table.subjectId),
+        check("concept_standard_or_custom", sql`(${table.weekId} IS NULL) <> (${table.studentId} IS NULL)`),
+    ],
 );
 
 /** A worksheet for a subject. durationMin is the full worksheet time, shared across its concepts; null if not set. */
@@ -118,6 +131,49 @@ export const testChapter = pgTable(
         chapterId: uuid("chapter_id").notNull().references(() => chapter.id, { onDelete: "cascade" }),
     },
     (table) => [primaryKey({ columns: [table.testId, table.chapterId] }), index("test_chapter_chapter_id_idx").on(table.chapterId)],
+);
+
+/** A student following a custom syllabus for a subject instead of the standard one. Its weeks are in studentWeek. */
+export const studentSyllabus = pgTable(
+    "student_syllabus",
+    {
+        studentId: text("student_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+        subjectId: uuid("subject_id").notNull().references(() => subject.id, { onDelete: "cascade" }),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+    },
+    (table) => [primaryKey({ columns: [table.studentId, table.subjectId] })],
+);
+
+/** One week of a student's custom syllabus, in a standard chapter. position orders weeks across the whole syllabus and is shown as the week number. */
+export const studentWeek = pgTable(
+    "student_week",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        studentId: text("student_id").notNull(),
+        subjectId: uuid("subject_id").notNull(),
+        chapterId: uuid("chapter_id").notNull(),
+        position: integer("position").notNull(),
+        durationMin: integer("duration_min").notNull(),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+    },
+    (table) => [
+        foreignKey({ name: "student_week_syllabus_fk", columns: [table.studentId, table.subjectId], foreignColumns: [studentSyllabus.studentId, studentSyllabus.subjectId] }).onDelete("cascade"),
+        // Composite key guarantees the chapter belongs to the same subject
+        foreignKey({ name: "student_week_chapter_fk", columns: [table.chapterId, table.subjectId], foreignColumns: [chapter.id, chapter.subjectId] }).onDelete("cascade"),
+        index("student_week_syllabus_idx").on(table.studentId, table.subjectId, table.position),
+        check("student_week_duration_non_negative", sql`${table.durationMin} >= 0`),
+    ],
+);
+
+/** The concepts in a custom week, in order. Each concept appears at most once per student syllabus (checked in the app). */
+export const studentWeekConcept = pgTable(
+    "student_week_concept",
+    {
+        studentWeekId: uuid("student_week_id").notNull().references(() => studentWeek.id, { onDelete: "cascade" }),
+        conceptId: uuid("concept_id").notNull().references(() => concept.id, { onDelete: "cascade" }),
+        position: integer("position").notNull(),
+    },
+    (table) => [primaryKey({ columns: [table.studentWeekId, table.conceptId] }), index("student_week_concept_concept_id_idx").on(table.conceptId)],
 );
 
 /** Matches a tutor with a student. A student has at most one tutor (their main tutor); a tutor may have several students. */

@@ -92,6 +92,13 @@
       "when": 1792935598770,
       "tag": "0012_onboarded_at",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794492169210,
+      "tag": "0013_student_syllabus",
+      "breakpoints": true
     }
   ]
 }

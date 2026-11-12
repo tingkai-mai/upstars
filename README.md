@@ -57,7 +57,7 @@ Admins have no profile page. Permission checks live in `lib/session.ts` (`requir
 ### Syllabus (`app/syllabus`)
 
 - Pick a level and subject. All views are filtered by them through URL params (`?subject=`).
-- **Syllabus** tab: chapters → weeks → concepts, with teaching time. Admins tap **Edit syllabus** to add, edit, delete and reorder items. Changes save as they go.
+- **Syllabus** tab: the **standard** syllabus, as chapters → weeks → concepts, with teaching time. Admins tap **Edit syllabus** to add, edit, delete and reorder items. Changes save as they go. Tutors see a pointer to customising it per student (below).
 - **Worksheets** and **Tests** tabs: lists, plus builders (`/new`, `/[id]`).
   - Worksheets cover concepts.
   - Tests cover chapters and are either Capstone checks or Monthly checks.
@@ -69,6 +69,10 @@ Admins have no profile page. Permission checks live in `lib/session.ts` (`requir
 - Pick a student (students see only themselves), then a level and subject. Three summary tiles show the % of concepts, worksheets and tests done.
 - **Goals** tab: quarterly exam goals with target marks and a result. Each goal shows a status of Waiting for result, Target met, or N marks short.
 - **Syllabus** tab: tick concepts done, or a whole week at once. "Taught 24 Oct" opens the lessons that covered a concept.
+- **Custom syllabus**: each student follows the standard syllabus for a subject until an editor taps **Customise for {name}**. That makes the student their own copy, which they can then edit: move chapters, add, remove and reorder weeks, change teaching time, and reorder, move, remove, add back or add new concepts. **Reset to standard syllabus** puts them back.
+  - The copy is independent: later changes to the standard syllabus don't flow in, apart from renames and deletions. Standard concepts added later appear under **Add back a concept**.
+  - Concepts are shared, so Done ticks, check-in history, worksheets and tests keep working. A concept added for one student is a `concept` row with `student_id` set and no week. Taking a concept out of a syllabus keeps the row, so past lessons still name it.
+  - Tables: `student_syllabus` (exists = custom), `student_week` (ordered by `position`, shown as the week number) and `student_week_concept`. `getStudentPlan` in `app/syllabus/queries.ts` returns the plan a student follows, in the same shape as the standard one. Progress tabs and lesson check-in use it.
 - **Worksheets** and **Tests** tabs: tick-lists with the date each one was done.
 - Editors are admins and the student's paired tutor (`canEditStudent` in `lib/students.ts`). Ticks save optimistically and roll back on error.
 
@@ -99,7 +103,7 @@ The audience is **young students and older volunteers**, so the rule is: large, 
 app/            routes; each feature folder holds its page, client components, actions.ts (Server Actions) and queries.ts
 components/     shared UI (form classes, modal, page header, tabs, icons, toast…)
 lib/            session/auth, sections, guide parser, formatting, role and test-type constants
-db/             Drizzle schema (schema.ts: syllabus, pairings, goals, completion, check-ins, resources; auth-schema.ts: better-auth)
+db/             Drizzle schema (schema.ts: syllabus, custom student syllabuses, pairings, goals, completion, check-ins, resources; auth-schema.ts: better-auth)
 drizzle/        migrations
 content/        onboarding.md (first-login guide)
 scripts/        seed.mjs (wipe and refill demo data), seed-syllabus.mjs

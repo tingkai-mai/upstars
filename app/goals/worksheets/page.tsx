@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { formatMinutes, pluralize } from "@/lib/format";
 import { EmptyState, formatWeeks } from "@/app/syllabus/ui";
+import { weekNumberByConcept } from "@/app/syllabus/queries";
 import { loadProgress } from "../context";
 import { GoalsHeader } from "../goals-header";
 import { CompletionRow } from "../completion-checkbox";
@@ -25,6 +26,8 @@ async function WorksheetProgress({ searchParams }: Pick<Props, "searchParams">) 
     const progress = await loadProgress(await searchParams);
     const { student, data } = progress;
     if (!student || !data) return <GoalsHeader tab="worksheets" progress={progress} />;
+    // Week numbers from the student's own syllabus, which may differ from the standard one
+    const weekOf = weekNumberByConcept(data.plan);
 
     return (
         <>
@@ -35,7 +38,8 @@ async function WorksheetProgress({ searchParams }: Pick<Props, "searchParams">) 
                 <CompletionList label="Worksheets">
                     {data.worksheets.map((sheet) => {
                         const completedAt = data.completion.worksheets.get(sheet.id);
-                        const weeks = sheet.concepts.length ? formatWeeks(sheet.concepts.map((c) => c.weekNumber)) : "No concepts";
+                        const weekNumbers = sheet.concepts.flatMap((c) => weekOf.get(c.id) ?? []);
+                        const weeks = sheet.concepts.length === 0 ? "No concepts" : weekNumbers.length ? formatWeeks(weekNumbers) : "Not in this syllabus";
                         return (
                             <li key={sheet.id} className={completionItemClass}>
                                 <CompletionRow kind="worksheet" studentId={student.id} itemId={sheet.id} done={Boolean(completedAt)} label={sheet.name} editable={data.canEdit}>

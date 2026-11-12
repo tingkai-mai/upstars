@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/session";
 import { canEditStudent, listViewableStudents } from "@/lib/students";
-import { getSubjectPlan, listTests, listWorksheets } from "@/app/syllabus/queries";
+import { getStudentPlan, listTests, listWorksheets } from "@/app/syllabus/queries";
 import { resolveSelection } from "@/app/syllabus/selection";
 import { getCompletion } from "./queries";
 
@@ -8,7 +8,7 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 /**
  * Everything the goal tracking tabs share: who's viewing, which student and subject are selected,
- * the subject's syllabus, and what the student has completed.
+ * the syllabus the student follows (their custom one or the standard one), and what they have completed.
  */
 export async function loadProgress(params: SearchParams) {
     const viewer = await requireUser();
@@ -18,7 +18,7 @@ export async function loadProgress(params: SearchParams) {
     if (!student || !subject) return { viewer, students, student, selection, data: null };
 
     const [plan, worksheets, tests, completion, canEdit] = await Promise.all([
-        getSubjectPlan(subject.id),
+        getStudentPlan(student.id, subject.id),
         listWorksheets(subject.id),
         listTests(subject.id),
         getCompletion(student.id, subject.id),
