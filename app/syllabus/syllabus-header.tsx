@@ -21,9 +21,9 @@ export function SyllabusHeader({ tab, selection, canEdit, testType }: Props) {
 
     return (
         <>
-            <PageHeader title="Syllabus management" back={{ href: "/", label: "Home" }} action={!selection.subject && manageSubjects} />
+            <PageHeader title="Syllabus" section="syllabus" back={{ href: "/", label: "Home" }} action={!selection.subject && manageSubjects} />
             <Tabs
-                label="Syllabus management"
+                label="Syllabus"
                 tabs={[
                     { label: "Syllabus", href: `/syllabus${query}`, active: tab === "syllabus" },
                     { label: "Worksheets", href: `/syllabus/worksheets${query}`, active: tab === "worksheets" },

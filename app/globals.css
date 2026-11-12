@@ -1,21 +1,48 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * The app's neutral is a night-sky navy rather than grey, after the Upstars name. Overriding Tailwind's zinc
+ * scale recolours every zinc-* class in one place. Secondary text (zinc-600) stays above 7:1 on white.
+ */
+@theme {
+  --color-zinc-50: #f5f6fb;
+  --color-zinc-100: #e9ecf5;
+  --color-zinc-200: #d8dceb;
+  --color-zinc-300: #bec4db;
+  --color-zinc-400: #9aa1bc;
+  --color-zinc-500: #6b7394;
+  --color-zinc-600: #4a5375;
+  --color-zinc-700: #363e60;
+  --color-zinc-800: #262d4e;
+  --color-zinc-900: #18204a;
+  --color-zinc-950: #0c1230;
+  --color-star: #ffc53d;
+
+  /* Tight tracking hurts legibility for young and older readers alike */
+  --tracking-tight: 0em;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-hyperlegible);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: var(--color-zinc-900);
+  /* Larger base text: every rem-based size, gap and touch target grows with it */
+  font-size: 106.25%;
+}
+
+@media (min-width: 40rem) {
+  :root {
+    font-size: 112.5%;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: var(--color-zinc-950);
+    --foreground: var(--color-zinc-50);
   }
 }
 
@@ -23,12 +50,28 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  line-height: 1.55;
 }
 
-/* A clear, consistent focus outline for keyboard users. In the base layer so a component's own focus style wins. */
 @layer base {
+  /* Headings bold, so the page's structure reads at a glance */
+  h1,
+  h2 {
+    font-weight: 700;
+  }
+
+  /* A clear, consistent focus outline for keyboard users. In the base layer so a component's own focus style wins. */
   :focus-visible {
     outline: 3px solid var(--color-sky-600);
     outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

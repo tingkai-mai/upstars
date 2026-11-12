@@ -69,7 +69,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
     return (
         <div className="flex flex-col gap-8">
             <header className="flex flex-col gap-2">
-                <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{copy.title}</h1>
+                <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">{copy.title}</h1>
                 <p className="text-base text-zinc-600 dark:text-zinc-400">{copy.subtitle}</p>
             </header>
 

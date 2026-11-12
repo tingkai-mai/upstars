@@ -23,14 +23,14 @@ export function GoalsHeader({ tab, progress }: { tab: GoalsTab; progress: Progre
 
     return (
         <>
-            <PageHeader title="Goal tracking" back={{ href: "/", label: "Home" }} />
+            <PageHeader title={viewer.role === "student" ? "My progress" : "Goals & progress"} section="goals" back={{ href: "/", label: "Home" }} />
             {!student ? (
                 <EmptyState>No students yet.</EmptyState>
             ) : (
                 <>
                     {/* Students only ever see themselves, so they get a heading rather than a picker */}
                     {viewer.role === "student" && <p className="-mt-3 text-base text-zinc-600 dark:text-zinc-400">Hi {viewer.name}, here&apos;s your progress</p>}
-                    <Tabs label="Goal tracking" tabs={TABS.map((t) => ({ label: t.label, href: `${t.path}?${query}`, active: t.key === tab }))} />
+                    <Tabs label="Goals & progress" tabs={TABS.map((t) => ({ label: t.label, href: `${t.path}?${query}`, active: t.key === tab }))} />
                     {(viewer.role !== "student" || selection.subject) && (
                         <FilterPanel>
                             {viewer.role !== "student" && <StudentFilter students={students} studentId={student.id} />}

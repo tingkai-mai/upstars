@@ -94,3 +94,12 @@ export function MailIcon() {
         </svg>
     );
 }
+
+/** The Upstars mark: a filled five-point star */
+export function StarIcon({ className = "size-6" }: { className?: string }) {
+    return (
+        <svg aria-hidden viewBox="0 0 20 20" className={`shrink-0 ${className}`}>
+            <path fill="currentColor" d="M10 1.8l2.5 5.2 5.7.8-4.1 4 1 5.6L10 14.7l-5.1 2.7 1-5.6-4.1-4 5.7-.8L10 1.8Z" />
+        </svg>
+    );
+}

@@ -21,7 +21,7 @@ async function NewUser() {
 
     return (
         <>
-            <PageHeader title="Add user" back={{ href: "/volunteers", label: "Users" }} />
+            <PageHeader title="Add user" section="people" back={{ href: "/volunteers", label: "Users" }} />
             <UserForm action={createUser} defaults={{ name: "", email: "", role: "student", currentLevel: "" }} mode="create" />
         </>
     );

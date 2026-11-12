@@ -19,7 +19,7 @@ export function Toast({ message, param = "notice" }: { message: string; param?: 
     if (!visible) return null;
     return (
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <p role="status" className="pointer-events-auto rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-lg dark:bg-zinc-50 dark:text-zinc-900">
+            <p role="status" className="pointer-events-auto rounded-full bg-zinc-900 px-5 py-3 text-base font-medium text-white shadow-lg dark:bg-zinc-50 dark:text-zinc-900">
                 {message}
             </p>
         </div>

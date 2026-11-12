@@ -29,7 +29,7 @@ export function GoalFields({ defaults, now }: { defaults?: Goal; now: { year: nu
                     <input id="year" name="year" type="number" inputMode="numeric" min={2000} max={2100} step={1} required defaultValue={defaults?.year ?? now.year} className={inputClass} />
                 </Field>
             </div>
-            <p className="-mt-2 text-sm text-zinc-600 dark:text-zinc-400">One goal per quarter of the year: Jan–Mar is Q1, Apr–Jun Q2, Jul–Sep Q3, Oct–Dec Q4.</p>
+            <p className="-mt-2 text-base text-zinc-600 dark:text-zinc-400">One goal per quarter of the year: Jan–Mar is Q1, Apr–Jun Q2, Jul–Sep Q3, Oct–Dec Q4.</p>
             <MarksInput name="totalMarks" label="The exam is out of (marks)" defaultValue={defaults?.totalMarks ?? 100} />
             <MarksInput name="targetMarks" label="Target marks" defaultValue={defaults?.targetMarks} />
             <MarksInput name="actualMarks" label="Result marks (optional)" defaultValue={defaults?.actualMarks} required={false} hint="Leave blank until the exam is marked." />

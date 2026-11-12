@@ -4,15 +4,15 @@
   - The "# " heading and the text under it make the first page.
   - Each "## " heading starts another page.
   - To show a page only to some roles, end its heading with them in square brackets,
-    e.g. "## Lesson Check-In [admin, tutor]". Roles: admin, tutor, student.
+    e.g. "## Lesson check-in [admin, tutor]". Roles: admin, tutor, student.
   - Supported: paragraphs, "- " bullet lists and **bold**. Nothing else is formatted.
 -->
 
 # Welcome to Upstars Assistant
 
-Upstars Assistant helps tutors, students and admins keep track of lessons and progress. Here's a quick tour of what you'll find. You can open this guide again from the **Guide** button on the home page.
+Upstars Assistant helps tutors, students and admins keep track of lessons and progress. Here's a quick tour of what you'll find. You can open this guide again any time from the **Help** button at the top of the home page.
 
-## Lesson Check-In [admin, tutor]
+## Lesson check-in [admin, tutor]
 
 At the top of the home page. After each lesson, tap **Check in a lesson** to record:
 
@@ -20,9 +20,9 @@ At the top of the home page. After each lesson, tap **Check in a lesson** to rec
 - rewards for attendance, behaviour and bonus (0–2 each)
 - your remarks, which you can then share on WhatsApp
 
-**Past Check-Ins** lets you flip back through a student's earlier lessons.
+**Past check-ins** lets you flip back through a student's earlier lessons.
 
-## Volunteer management [admin, tutor]
+## People [admin, tutor]
 
 Browse everyone's profile: each student's main tutor, who else has taught them, their goals and past lessons. Admins can also add and edit users and pair tutors with students.
 
@@ -30,14 +30,18 @@ Browse everyone's profile: each student's main tutor, who else has taught them, 
 
 See your main tutor, your goals and the remarks from your past lessons.
 
-## Syllabus management
+## Syllabus
 
-The plan for each subject, week by week: chapters, concepts, worksheets and tests (e.g Capstone checks, monthly checks). Admins keep it up to date.
+What's taught in each subject, week by week: chapters, concepts, worksheets and tests (e.g Capstone checks, monthly checks). Admins keep it up to date.
 
-## Goal tracking
+## Goals & progress [admin, tutor]
 
 Quarterly goals for each subject, and how much of the syllabus has been covered so far for each student.
 
-## Upstars resources
+## My progress [student]
+
+Your goals for each exam, and a tick for every concept, worksheet and test you've finished. Your tutor adds the ticks after your lessons.
+
+## Resources
 
 Handy links to guides, materials and forms, kept up to date by admins.

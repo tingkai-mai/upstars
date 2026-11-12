@@ -66,9 +66,9 @@ export function CheckInActions({ checkIn, pastCheckIns }: { checkIn: ReactNode; 
                 <button
                     type="button"
                     onClick={() => open("past")}
-                    className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-zinc-300 bg-white px-5 text-base font-medium text-zinc-800 transition hover:bg-zinc-50 dark:bg-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                    className="inline-flex h-12 w-full items-center justify-center rounded-2xl border-2 border-zinc-500 bg-white px-5 text-base font-semibold text-zinc-900 transition hover:bg-zinc-50 dark:bg-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
                 >
-                    Past Check-Ins
+                    Past check-ins
                 </button>
             </div>
             {saved && openModal !== "share" && (
@@ -83,7 +83,7 @@ export function CheckInActions({ checkIn, pastCheckIns }: { checkIn: ReactNode; 
                 </Modal>
             )}
             {openModal === "past" && (
-                <Modal title="Past Check-Ins" onClose={close} closeLabel="Close" size="full">
+                <Modal title="Past check-ins" onClose={close} closeLabel="Close" size="full">
                     {pastCheckIns}
                 </Modal>
             )}

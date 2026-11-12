@@ -56,11 +56,14 @@ export function OnboardingGuide({ pages, seenIn, seen, userId }: Props) {
 
     return (
         <>
-            <button type="button" onClick={() => setOpen(true)} className={secondaryButtonClass}>
-                Guide
+            <button type="button" onClick={() => setOpen(true)} className={`${secondaryButtonClass} gap-2`}>
+                <span aria-hidden className="flex size-6 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-white dark:bg-zinc-50 dark:text-zinc-900">
+                    ?
+                </span>
+                Help
             </button>
             {open && (
-                <Modal title={current.title} onClose={close} closeLabel="Close guide">
+                <Modal title={current.title} onClose={close} closeLabel="Close help">
                     <div className="flex min-h-48 flex-col gap-3 text-lg text-zinc-800 dark:text-zinc-300">
                         {current.blocks.map((block, index) => (
                             <Block key={index} block={block} />

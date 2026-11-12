@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
+import { StarIcon } from "@/components/icons";
 import { AuthTabs } from "./auth-tabs";
 
 async function RedirectIfSignedIn() {
@@ -15,6 +16,12 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
                 <RedirectIfSignedIn />
             </Suspense>
             <div className="w-full sm:max-w-sm sm:rounded-2xl sm:border sm:border-zinc-200 sm:bg-white sm:p-8 sm:shadow-sm dark:sm:border-zinc-800 dark:sm:bg-zinc-950">
+                <p className="mb-6 flex items-center gap-2 text-lg font-bold text-zinc-900 dark:text-zinc-50">
+                    <span className="text-star">
+                        <StarIcon className="size-7" />
+                    </span>
+                    Upstars Assistant
+                </p>
                 <AuthTabs>{children}</AuthTabs>
             </div>
         </main>

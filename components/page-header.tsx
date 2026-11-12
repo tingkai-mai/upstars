@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { SectionIcon, type SectionKey } from "@/lib/sections";
 
 type Props = {
     title: string;
@@ -8,9 +9,11 @@ type Props = {
     back?: { href: string; label: string };
     /** The page's main action, e.g. Add user */
     action?: ReactNode;
+    /** Shows the section's coloured icon, matching its home-page tile */
+    section?: SectionKey;
 };
 
-export function PageHeader({ title, subtitle, back, action }: Props) {
+export function PageHeader({ title, subtitle, back, action, section }: Props) {
     return (
         <>
             {back && (
@@ -28,9 +31,12 @@ export function PageHeader({ title, subtitle, back, action }: Props) {
                 </div>
             )}
             <header className="flex flex-wrap items-end justify-between gap-3">
-                <div className="min-w-0">
-                    <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50">{title}</h1>
-                    {subtitle && <p className="mt-1 text-base text-zinc-600 dark:text-zinc-400">{subtitle}</p>}
+                <div className="flex min-w-0 items-center gap-3">
+                    {section && <SectionIcon section={section} />}
+                    <div className="min-w-0">
+                        <h1 className="text-2xl font-bold text-zinc-900 sm:text-3xl dark:text-zinc-50">{title}</h1>
+                        {subtitle && <div className="mt-1 text-base text-zinc-600 dark:text-zinc-400">{subtitle}</div>}
+                    </div>
                 </div>
                 {action}
             </header>

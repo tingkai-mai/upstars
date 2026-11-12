@@ -31,13 +31,13 @@ export async function CheckInSection({ viewer, params }: { viewer: Viewer; param
     return (
         <section aria-labelledby="check-in-heading" className="flex flex-col gap-4 rounded-3xl bg-zinc-100 p-4 sm:p-6 dark:bg-zinc-900">
             <div>
-                <h2 id="check-in-heading" className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
-                    Lesson Check-In
+                <h2 id="check-in-heading" className="text-xl text-zinc-900 sm:text-2xl dark:text-zinc-50">
+                    Lesson check-in
                 </h2>
                 <p className="text-base text-zinc-600 dark:text-zinc-400">Record what you covered with a student.</p>
             </div>
             {!student ? (
-                <EmptyState>No students yet. Add one in Volunteer management.</EmptyState>
+                <EmptyState>No students yet. An admin can add one in People.</EmptyState>
             ) : (
                 <CheckInActions
                     checkIn={<CheckInContent students={students} student={student} params={params} />}
@@ -60,7 +60,7 @@ async function CheckInContent({ students, student, params }: ContentProps & { pa
         return (
             <>
                 {picker}
-                <EmptyState>No subjects yet. Add one in Syllabus management.</EmptyState>
+                <EmptyState>No subjects yet. An admin can add one in Syllabus.</EmptyState>
             </>
         );
     }

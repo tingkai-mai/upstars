@@ -11,7 +11,7 @@ import { createGoal, deleteGoal, updateGoal } from "./actions";
 import { GoalFields, MONTHS } from "./goal-fields";
 import { GoalStatus, Marks } from "./goal-result";
 
-export const metadata: Metadata = { title: "Goal tracking" };
+export const metadata: Metadata = { title: "Goals & progress" };
 
 type Props = PageProps<"/goals">;
 

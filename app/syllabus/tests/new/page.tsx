@@ -34,7 +34,7 @@ async function NewTest({ searchParams }: Pick<Props, "searchParams">) {
 
     return (
         <>
-            <PageHeader title="New test" back={{ href: listHref, label: "Tests" }} />
+            <PageHeader title="New test" section="syllabus" back={{ href: listHref, label: "Tests" }} />
             {!plan ? (
                 <EmptyState>Add a subject first, using Edit levels &amp; subjects on the Syllabus page.</EmptyState>
             ) : (

@@ -34,7 +34,7 @@ async function EditWorksheet({ params }: Pick<Props, "params">) {
 
     return (
         <>
-            <PageHeader title="Edit worksheet" back={{ href: listHref, label: "Worksheets" }} />
+            <PageHeader title="Edit worksheet" section="syllabus" back={{ href: listHref, label: "Worksheets" }} />
             <p className="-mt-3 text-sm text-zinc-600 dark:text-zinc-400">
                 For {plan.subject.level} {plan.subject.name}.
             </p>

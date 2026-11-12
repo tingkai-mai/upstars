@@ -12,7 +12,7 @@ import { createResource, deleteResource, moveResource, updateResource } from "./
 import { ResourceFields } from "./fields";
 import { listResources, type Resource } from "./queries";
 
-export const metadata: Metadata = { title: "Upstars resources" };
+export const metadata: Metadata = { title: "Resources" };
 
 export default function ResourcesPage() {
     return (
@@ -33,7 +33,8 @@ async function Resources() {
     return (
         <>
             <PageHeader
-                title="Upstars resources"
+                title="Resources"
+                section="resources"
                 back={{ href: "/", label: "Home" }}
                 action={
                     admin && (

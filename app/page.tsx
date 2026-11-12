@@ -1,35 +1,29 @@
-import { Suspense, type ComponentType } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { SignOutButton } from "@/components/sign-out-button";
-import { BookIcon, ChevronRightIcon, LinkIcon, PeopleIcon, TargetIcon } from "@/components/icons";
+import { ChevronRightIcon, StarIcon } from "@/components/icons";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { user as userTable } from "@/db/schema";
 import { loadGuide } from "@/lib/guide";
 import { isDemoEmail } from "@/lib/demo-accounts";
 import { isUserRole } from "@/lib/users";
+import { SECTIONS, SectionIcon, type SectionKey } from "@/lib/sections";
 import { CheckInSection } from "@/app/check-in/check-in-section";
 import { OnboardingGuide } from "./onboarding-guide";
 
-type Module = { title: string; description: string; href?: string; Icon: ComponentType };
+type Tile = { section: SectionKey; title: string; description: string; href: string };
 
-const MODULES: Module[] = [
-    { title: "Volunteer management", description: "Manage tutors, students and admins", href: "/volunteers", Icon: PeopleIcon },
-    { title: "Syllabus management", description: "Plan chapters, concepts and worksheets", href: "/syllabus", Icon: BookIcon },
-    { title: "Goal tracking", description: "Student goals and syllabus progress", href: "/goals", Icon: TargetIcon },
-    { title: "Upstars resources", description: "Guides and materials", href: "/resources", Icon: LinkIcon },
+const STAFF_TILES: SectionKey[] = ["people", "syllabus", "goals", "resources"];
+
+// Students see their own progress first, and plainer names written to them
+const STUDENT_TILES: { section: SectionKey; title: string; description: string }[] = [
+    { section: "goals", title: "My progress", description: "Your goals and what you've learnt" },
+    { section: "syllabus", title: "Syllabus", description: "What you'll learn, week by week" },
+    { section: "people", title: "My profile", description: "Your tutor and your past lessons" },
+    { section: "resources", title: "Resources", description: "Guides and materials" },
 ];
-
-// Students only see their own profile in volunteer management, and get plainer names
-const STUDENT_MODULES: Record<string, Partial<Module>> = {
-    "Volunteer management": { title: "My profile", description: "Your tutor, goals and past lessons" },
-    "Syllabus management": { title: "Syllabus", description: "What you'll learn, week by week" },
-    "Goal tracking": { title: "My progress", description: "Your goals and what you've covered" },
-};
-
-const tileClass = "flex min-h-20 items-center gap-4 rounded-2xl border p-4 text-left sm:p-5";
-const tileIconClass = "flex size-12 shrink-0 items-center justify-center rounded-xl";
 
 type Props = PageProps<"/">;
 
@@ -47,27 +41,39 @@ async function Dashboard({ searchParams }: Pick<Props, "searchParams">) {
     const user = await requireUser();
     const canCheckIn = user.role === "tutor" || user.role === "admin";
     const [[account], guidePages] = await Promise.all([db.select({ onboardedAt: userTable.onboardedAt }).from(userTable).where(eq(userTable.id, user.id)), loadGuide(isUserRole(user.role) ? user.role : "student")]);
-    const modules = user.role === "student" ? MODULES.map((m) => ({ ...m, ...STUDENT_MODULES[m.title], ...(m.href === "/volunteers" && { href: `/volunteers/${user.id}` }) })) : MODULES;
+    const tiles: Tile[] =
+        user.role === "student"
+            ? STUDENT_TILES.map((t) => ({ ...t, href: t.section === "people" ? `/volunteers/${user.id}` : SECTIONS[t.section].href }))
+            : STAFF_TILES.map((section) => ({ section, ...SECTIONS[section] }));
 
     return (
         <>
             <header className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                    <p className="text-base text-zinc-600 dark:text-zinc-400">Upstars Assistant</p>
-                    <h1 className="text-3xl font-semibold tracking-tight break-words text-zinc-900 dark:text-zinc-50">Hi, {user.name}</h1>
+                    <p className="flex items-center gap-1.5 text-base font-medium text-zinc-600 dark:text-zinc-400">
+                        <span className="text-star">
+                            <StarIcon className="size-5" />
+                        </span>
+                        Upstars Assistant
+                    </p>
+                    <h1 className="mt-1 text-4xl font-bold break-words text-zinc-900 dark:text-zinc-50">Hi, {user.name}</h1>
                 </div>
                 <OnboardingGuide pages={guidePages} seenIn={isDemoEmail(user.email) ? "browser" : "account"} seen={Boolean(account?.onboardedAt)} userId={user.id} />
             </header>
 
             {canCheckIn && <CheckInSection viewer={user} params={await searchParams} />}
 
-            <nav aria-labelledby="modules-heading" className="flex flex-col gap-3">
-                <h2 id="modules-heading" className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                    Go to
+            <nav aria-labelledby="sections-heading" className="flex flex-col gap-3">
+                <h2 id="sections-heading" className="text-xl text-zinc-900 dark:text-zinc-50">
+                    Where would you like to go?
                 </h2>
-                <div className="grid gap-3 sm:grid-cols-2">
-                    {modules.map((module) => (module.href ? <ModuleLink key={module.title} module={module} href={module.href} /> : <DisabledModule key={module.title} module={module} />))}
-                </div>
+                <ul className="grid gap-3 sm:grid-cols-2">
+                    {tiles.map((tile) => (
+                        <li key={tile.section}>
+                            <SectionTile tile={tile} />
+                        </li>
+                    ))}
+                </ul>
             </nav>
 
             {/* At the bottom, away from everyday buttons, so it isn't tapped by mistake */}
@@ -76,41 +82,21 @@ async function Dashboard({ searchParams }: Pick<Props, "searchParams">) {
     );
 }
 
-function ModuleLink({ module, href }: { module: Module; href: string }) {
+/** A large, coloured link to one section. The colour and icon reappear in that section's header. */
+function SectionTile({ tile }: { tile: Tile }) {
     return (
         <Link
-            href={href}
-            className={`${tileClass} border-zinc-200 bg-white text-zinc-900 transition hover:border-zinc-400 hover:bg-zinc-50 active:scale-[0.99] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:border-zinc-600 dark:hover:bg-zinc-900`}
+            href={tile.href}
+            className="flex h-full min-h-24 items-center gap-4 rounded-2xl border-2 border-zinc-200 bg-white p-4 text-left text-zinc-900 transition hover:border-zinc-400 hover:bg-zinc-50 active:scale-[0.99] sm:p-5 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:border-zinc-600 dark:hover:bg-zinc-900"
         >
-            <span className={`${tileIconClass} bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50`}>
-                <module.Icon />
-            </span>
+            <SectionIcon section={tile.section} className="size-14 rounded-2xl [&>svg]:size-8" />
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-lg font-semibold">{module.title}</span>
-                <span className="text-base text-zinc-600 dark:text-zinc-400">{module.description}</span>
+                <span className="text-xl font-bold">{tile.title}</span>
+                <span className="text-base text-zinc-600 dark:text-zinc-400">{tile.description}</span>
             </span>
             <span className="text-zinc-500 dark:text-zinc-400">
                 <ChevronRightIcon />
             </span>
         </Link>
-    );
-}
-
-function DisabledModule({ module }: { module: Module }) {
-    return (
-        <button
-            type="button"
-            disabled
-            className={`${tileClass} cursor-not-allowed border-dashed border-zinc-300 bg-zinc-50 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-500`}
-        >
-            <span className={`${tileIconClass} bg-zinc-100 dark:bg-zinc-800`}>
-                <module.Icon />
-            </span>
-            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-lg font-semibold">{module.title}</span>
-                <span className="text-base">{module.description}</span>
-            </span>
-            <span className="shrink-0 rounded-full bg-zinc-200 px-2.5 py-1 text-sm font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">Coming soon</span>
-        </button>
     );
 }

@@ -34,7 +34,7 @@ async function EditTest({ params }: Pick<Props, "params">) {
 
     return (
         <>
-            <PageHeader title="Edit test" back={{ href: listHref, label: "Tests" }} />
+            <PageHeader title="Edit test" section="syllabus" back={{ href: listHref, label: "Tests" }} />
             <p className="-mt-3 text-sm text-zinc-600 dark:text-zinc-400">
                 For {plan.subject.level} {plan.subject.name}.
             </p>

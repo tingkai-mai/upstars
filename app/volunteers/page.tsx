@@ -12,7 +12,7 @@ import { Toast } from "@/components/toast";
 import { UserList } from "./user-list";
 import { VolunteerTabs } from "./volunteer-tabs";
 
-export const metadata: Metadata = { title: "Volunteer management" };
+export const metadata: Metadata = { title: "People" };
 
 const NOTICES: Record<string, string> = { "admin-profile": "Admin has no profile" };
 
@@ -42,7 +42,8 @@ async function Users({ searchParams }: Pick<Props, "searchParams">) {
     return (
         <>
             <PageHeader
-                title="Volunteer management"
+                title="People"
+                section="people"
                 back={{ href: "/", label: "Home" }}
                 action={
                     admin && (

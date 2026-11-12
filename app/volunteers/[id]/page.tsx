@@ -51,6 +51,7 @@ async function UserProfile({ params }: Pick<Props, "params">) {
         <>
             <PageHeader
                 title={isSelf ? "My profile" : member.name}
+                section="people"
                 subtitle={
                     <span className="flex flex-wrap items-center gap-2">
                         {isSelf && <span className="font-medium text-zinc-900 dark:text-zinc-50">{member.name}</span>}
