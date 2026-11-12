@@ -6,9 +6,9 @@ import { PageHeader } from "@/components/page-header";
 import { FormDialog } from "@/components/form-dialog";
 import { compactPrimaryButtonClass, inlineEditButtonClass } from "@/components/form";
 import { PenIcon } from "@/components/icons";
-import { MoveButtons } from "@/components/move-buttons";
+import { SortableList } from "@/components/sortable-list";
 import { EmptyState } from "@/app/syllabus/ui";
-import { createResource, deleteResource, moveResource, updateResource } from "./actions";
+import { createResource, deleteResource, reorderResources, updateResource } from "./actions";
 import { ResourceFields } from "./fields";
 import { listResources, type Resource } from "./queries";
 
@@ -57,11 +57,26 @@ async function Resources() {
             ) : (
                 <section aria-label="Resources" className="flex flex-col gap-2">
                     <p className="text-base text-zinc-600 dark:text-zinc-400">{pluralize(resources.length, "resource")}</p>
-                    <ul className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-                        {resources.map((r, index) => (
-                            <ResourceRow key={r.id} resource={r} admin={admin} isFirst={index === 0} isLast={index === resources.length - 1} />
-                        ))}
-                    </ul>
+                    {admin ? (
+                        <>
+                            {resources.length > 1 && <p className="text-base text-zinc-600 dark:text-zinc-400">Drag the dots to change the order.</p>}
+                            <SortableList
+                                label="Resources"
+                                action={reorderResources}
+                                className={listClass}
+                                itemClassName="pl-1"
+                                items={resources.map((r) => ({ id: r.id, name: r.name, content: <ResourceRow resource={r} admin /> }))}
+                            />
+                        </>
+                    ) : (
+                        <ul className={listClass}>
+                            {resources.map((r) => (
+                                <li key={r.id}>
+                                    <ResourceRow resource={r} admin={false} />
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </section>
             )}
         </>
@@ -73,11 +88,12 @@ function displayHost(url: string) {
     return new URL(url).hostname.replace(/^www\./, "");
 }
 
-type RowProps = { resource: Resource; admin: boolean; isFirst: boolean; isLast: boolean };
+const listClass = "divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800";
 
-function ResourceRow({ resource, admin, isFirst, isLast }: RowProps) {
+/** A resource's link, with admins' Edit button on a row of its own underneath. */
+function ResourceRow({ resource, admin }: { resource: Resource; admin: boolean }) {
     return (
-        <li className="flex flex-col">
+        <div className="flex flex-col">
             {/* The whole row opens the link; URLs are checked to be http(s) when saved */}
             <a
                 href={resource.url}
@@ -97,7 +113,6 @@ function ResourceRow({ resource, admin, isFirst, isLast }: RowProps) {
             {admin && (
                 // A row of their own, so the link keeps the full width
                 <div className="flex items-center justify-end gap-1 px-3 pb-3">
-                    <MoveButtons action={moveResource.bind(null, resource.id)} name={resource.name} isFirst={isFirst} isLast={isLast} />
                     <FormDialog
                         title="Edit resource"
                         trigger={
@@ -116,6 +131,6 @@ function ResourceRow({ resource, admin, isFirst, isLast }: RowProps) {
                     </FormDialog>
                 </div>
             )}
-        </li>
+        </div>
     );
 }

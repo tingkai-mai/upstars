@@ -32,6 +32,34 @@ export function Accordion({ title, subtitle, nested = false, defaultOpen, childr
     );
 }
 
+type WeekSectionProps = {
+    number: number;
+    /** Shown after the week number, e.g. "3 concepts · 1 h" */
+    summary: string;
+    defaultOpen?: boolean;
+    /** Buttons for the whole week. In the panel, not the header: a button in <summary> would also toggle it */
+    actions?: ReactNode;
+    children: ReactNode;
+};
+
+/** A week that folds down to its heading line. A native <details>, like Accordion, so it keeps its open state when Next preserves the page. */
+export function WeekSection({ number, summary, defaultOpen, actions, children }: WeekSectionProps) {
+    return (
+        <details open={defaultOpen} className="group/week overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 bg-zinc-50 px-3 py-2 transition hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 [&::-webkit-details-marker]:hidden">
+                <h4 className="min-w-0 flex-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                    Week {number} <span className="font-normal text-zinc-600 dark:text-zinc-400">· {summary}</span>
+                </h4>
+                <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.75} className="size-5 shrink-0 text-zinc-600 transition group-open/week:rotate-180 dark:text-zinc-400">
+                    <path d="m6 8 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </summary>
+            {actions && <div className="flex flex-wrap justify-end gap-2 border-t border-zinc-200 px-3 pt-2 dark:border-zinc-800">{actions}</div>}
+            <div className={actions ? "" : "border-t border-zinc-200 dark:border-zinc-800"}>{children}</div>
+        </details>
+    );
+}
+
 export function EmptyState({ children }: { children: ReactNode }) {
     return <div className="rounded-xl border-2 border-dashed border-zinc-300 p-6 text-center text-base text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">{children}</div>;
 }

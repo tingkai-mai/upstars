@@ -1,9 +1,10 @@
 "use server";
-import { asc, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { resource } from "@/db/schema";
 import { getAdminSession } from "@/lib/session";
 import { assertFound, InvalidInput, runMutation, text, type FormResult } from "@/lib/form-data";
+import { readOrder } from "@/lib/reorder";
 import { MAX_DESCRIPTION_LENGTH } from "./fields";
 
 /** Runs an admin-only change, turning bad input into form errors. */
@@ -50,20 +51,15 @@ export async function deleteResource(id: string) {
 }
 
 /** Swaps a resource with its neighbour, then renumbers the list 1..n so gaps and ties can't build up. */
-export async function moveResource(id: string, direction: "up" | "down") {
+/** Saves the list in a new order, from a drag-and-drop. */
+export async function reorderResources(orderedIds: string[]) {
     return mutate(() =>
         db.transaction(async (tx) => {
-            if (direction !== "up" && direction !== "down") throw new InvalidInput("Invalid direction.");
-            // Lock the list so concurrent moves can't interleave
-            const ordered = await tx.select({ id: resource.id, position: resource.position }).from(resource).orderBy(asc(resource.position), asc(resource.createdAt)).for("update");
-            const from = ordered.findIndex((r) => r.id === id);
-            if (from === -1) assertFound([]); // deleted meanwhile
-            const to = direction === "up" ? from - 1 : from + 1;
-            if (to < 0 || to >= ordered.length) return; // already at the edge
-            [ordered[from], ordered[to]] = [ordered[to], ordered[from]];
-
-            for (const [index, item] of ordered.entries()) {
-                if (item.position !== index + 1) await tx.update(resource).set({ position: index + 1 }).where(eq(resource.id, item.id));
+            // Lock the list so concurrent reorders can't interleave
+            const current = await tx.select({ id: resource.id, position: resource.position }).from(resource).for("update");
+            const positions = new Map(current.map((r) => [r.id, r.position]));
+            for (const [index, id] of readOrder(orderedIds, current.map((r) => r.id)).entries()) {
+                if (positions.get(id) !== index + 1) await tx.update(resource).set({ position: index + 1 }).where(eq(resource.id, id));
             }
         }),
     );

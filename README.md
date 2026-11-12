@@ -93,7 +93,7 @@ The audience is **young students and older volunteers**, so the rule is: large, 
   - `PageHeader` has a sticky "Back to …" link.
   - `Modal` is a native `<dialog>`: a bottom sheet on phones, centred on desktop.
   - `FormDialog` handles add/edit modals with Delete.
-  - `Tabs`, `FilterPanel` + `FilterSelect` (URL-backed pickers), `Accordion`/`EmptyState` (`app/syllabus/ui.tsx`), `MoveButtons` (reorder) and `Toast`.
+  - `Tabs`, `FilterPanel` + `FilterSelect` (URL-backed pickers), `Accordion`/`EmptyState` (`app/syllabus/ui.tsx`), `SortableList` (`components/sortable-list.tsx`: drag-and-drop reordering by a grip handle, or with Space and the arrow keys; its Server Action gets the full new order and checks it with `readOrder` in `lib/reorder.ts`) and `Toast`.
 - **Copy:** Sentence case, plain words ("People", not "Volunteer management"). Buttons say what they do ("Save check-in"). Empty states say what to do next.
 - **Accessibility:** There's a visible focus ring everywhere and reduced motion is respected. Status changes use `aria-live`, and colour is always paired with text or an icon.
 

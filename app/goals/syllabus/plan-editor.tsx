@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { formatMinutes, pluralize } from "@/lib/format";
 import { FormDialog } from "@/components/form-dialog";
-import { MoveButtons } from "@/components/move-buttons";
+import { SortableList } from "@/components/sortable-list";
 import { CheckIcon, PenIcon } from "@/components/icons";
 import { addButtonClass, compactPrimaryButtonClass, dangerButtonClass, Field, inlineEditButtonClass, selectClass, selectStyle } from "@/components/form";
 import { ConceptFields, TeachingTimeField } from "@/app/syllabus/fields";
-import { Accordion, EmptyState, formatWeeks } from "@/app/syllabus/ui";
+import { Accordion, EmptyState, formatWeeks, WeekSection } from "@/app/syllabus/ui";
 import type { Chapter, Concept, StudentPlan, Week } from "@/app/syllabus/queries";
 import { ActionButton } from "./action-button";
 import * as actions from "./actions";
@@ -41,7 +41,9 @@ export function PlanEditor({ student, plan, studentConcepts, viewHref }: Props) 
         <>
             {/* Sticky, so Done stays in reach while editing further down */}
             <div className="sticky top-14 z-10 flex items-center gap-3 rounded-2xl bg-amber-50 p-3 shadow-sm sm:p-4 dark:bg-amber-950">
-                <p className="flex-1 text-base text-amber-900 dark:text-amber-200">Editing {student.name}&apos;s syllabus. Changes save as you go and only affect {student.name}.</p>
+                <p className="flex-1 text-base text-amber-900 dark:text-amber-200">
+                    Editing {student.name}&apos;s syllabus. Changes save as you go and only affect {student.name}. Drag the dots to reorder chapters, weeks and concepts.
+                </p>
                 <Link href={viewHref} replace scroll={false} className={`${compactPrimaryButtonClass} gap-2`}>
                     <CheckIcon />
                     Done
@@ -49,20 +51,16 @@ export function PlanEditor({ student, plan, studentConcepts, viewHref }: Props) 
             </div>
 
             {plan.chapters.length === 0 && <EmptyState>This syllabus has no weeks yet. Add a week to a chapter below.</EmptyState>}
-            <section aria-label="Chapters" className="flex flex-col gap-3">
-                {plan.chapters.map((chapter, index) => (
-                    <ChapterEditor
-                        key={chapter.id}
-                        chapter={chapter}
-                        student={student}
-                        subjectId={subjectId}
-                        isFirst={index === 0}
-                        isLast={index === plan.chapters.length - 1}
-                        weekOptions={weekOptions}
-                        addBackGroups={addBackGroups}
-                    />
-                ))}
-            </section>
+            <SortableList
+                label="Chapters"
+                action={actions.reorderChapters.bind(null, student.id, subjectId)}
+                className="flex flex-col gap-3"
+                items={plan.chapters.map((chapter, index) => ({
+                    id: chapter.id,
+                    name: chapter.name,
+                    content: <ChapterEditor chapter={chapter} student={student} subjectId={subjectId} defaultOpen={index === 0} weekOptions={weekOptions} addBackGroups={addBackGroups} />,
+                }))}
+            />
 
             {otherChapters.length > 0 && (
                 <section aria-labelledby="other-chapters-heading" className="flex flex-col gap-3">
@@ -102,32 +100,23 @@ type ChapterProps = {
     chapter: Chapter;
     student: Student;
     subjectId: string;
-    isFirst: boolean;
-    isLast: boolean;
+    defaultOpen: boolean;
     weekOptions: WeekOption[];
     addBackGroups: ConceptGroup[];
 };
 
-function ChapterEditor({ chapter, student, subjectId, isFirst, isLast, weekOptions, addBackGroups }: ChapterProps) {
+function ChapterEditor({ chapter, student, subjectId, defaultOpen, weekOptions, addBackGroups }: ChapterProps) {
     const conceptCount = chapter.weeks.reduce((sum, w) => sum + w.concepts.length, 0);
     const teaching = chapter.weeks.reduce((sum, w) => sum + w.durationMin, 0);
 
     return (
         <Accordion
-            defaultOpen={isFirst}
+            defaultOpen={defaultOpen}
             title={chapter.name}
             subtitle={`${formatWeeks(chapter.weeks.map((w) => w.number))} · ${pluralize(conceptCount, "concept")} · ${formatMinutes(teaching)}`}
         >
             {/* Inside the panel, not the header: a button in <summary> would also toggle the accordion */}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                {!(isFirst && isLast) ? (
-                    <span className="flex items-center gap-2 text-base text-zinc-600 dark:text-zinc-400">
-                        Move chapter
-                        <MoveButtons action={actions.moveChapter.bind(null, student.id, subjectId, chapter.id)} name={chapter.name} isFirst={isFirst} isLast={isLast} />
-                    </span>
-                ) : (
-                    <span />
-                )}
+            <div className="flex justify-end">
                 <ActionButton
                     action={actions.removeChapter.bind(null, student.id, subjectId, chapter.id)}
                     pendingLabel="Removing…"
@@ -138,17 +127,16 @@ function ChapterEditor({ chapter, student, subjectId, isFirst, isLast, weekOptio
                 </ActionButton>
             </div>
 
-            {chapter.weeks.map((week, index) => (
-                <WeekEditor
-                    key={week.id}
-                    week={week}
-                    student={student}
-                    isFirst={index === 0}
-                    isLast={index === chapter.weeks.length - 1}
-                    weekOptions={weekOptions}
-                    addBackGroups={addBackGroups}
-                />
-            ))}
+            <SortableList
+                label={`Weeks in ${chapter.name}`}
+                action={actions.reorderWeeks.bind(null, student.id, subjectId, chapter.id)}
+                className="flex flex-col gap-3"
+                items={chapter.weeks.map((week) => ({
+                    id: week.id,
+                    name: `week ${week.number}`,
+                    content: <WeekEditor week={week} student={student} weekOptions={weekOptions} addBackGroups={addBackGroups} />,
+                }))}
+            />
 
             <AddWeekDialog student={student} subjectId={subjectId} chapter={chapter} label="+ Add week" />
         </Accordion>
@@ -170,86 +158,45 @@ function AddWeekDialog({ student, subjectId, chapter, label }: { student: Studen
     );
 }
 
-type WeekProps = { week: Week; student: Student; isFirst: boolean; isLast: boolean; weekOptions: WeekOption[]; addBackGroups: ConceptGroup[] };
+type WeekProps = { week: Week; student: Student; weekOptions: WeekOption[]; addBackGroups: ConceptGroup[] };
 
 /** A week's heading and controls, then its concepts in order, each with controls on a line of their own. */
-function WeekEditor({ week, student, isFirst, isLast, weekOptions, addBackGroups }: WeekProps) {
-    const weekName = `week ${week.number}`;
-
+function WeekEditor({ week, student, weekOptions, addBackGroups }: WeekProps) {
     return (
-        <section className="flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
-            <div className="flex flex-wrap items-center justify-between gap-2 bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-                    Week {week.number} <span className="font-normal text-zinc-600 dark:text-zinc-400">· {formatMinutes(week.durationMin)}</span>
-                </h4>
-                <div className="flex items-center gap-1">
-                    {!(isFirst && isLast) && <MoveButtons action={actions.moveWeek.bind(null, week.id)} name={weekName} isFirst={isFirst} isLast={isLast} />}
-                    <FormDialog
-                        title={`Edit week ${week.number}`}
-                        trigger={
-                            <>
-                                <PenIcon />
-                                Edit week
-                            </>
-                        }
-                        triggerLabel={`Edit week ${week.number}`}
-                        triggerClassName={inlineEditButtonClass}
-                        submitLabel="Save week"
-                        action={actions.updateWeek.bind(null, week.id)}
-                        remove={{
-                            action: actions.removeWeek.bind(null, week.id),
-                            label: "Remove week",
-                            confirm: `Take week ${week.number} out of ${student.name}'s syllabus? Its ${pluralize(week.concepts.length, "concept")} will be removed with it. Done ticks and past lessons are kept.`,
-                        }}
-                    >
-                        <TeachingTimeField defaultValue={week.durationMin} />
-                    </FormDialog>
-                </div>
-            </div>
-
+        <WeekSection
+            number={week.number}
+            summary={`${pluralize(week.concepts.length, "concept")} · ${formatMinutes(week.durationMin)}`}
+            actions={
+                <FormDialog
+                    title={`Edit week ${week.number}`}
+                    trigger={
+                        <>
+                            <PenIcon />
+                            Edit week
+                        </>
+                    }
+                    triggerLabel={`Edit week ${week.number}`}
+                    triggerClassName={inlineEditButtonClass}
+                    submitLabel="Save week"
+                    action={actions.updateWeek.bind(null, week.id)}
+                    remove={{
+                        action: actions.removeWeek.bind(null, week.id),
+                        label: "Remove week",
+                        confirm: `Take week ${week.number} out of ${student.name}'s syllabus? Its ${pluralize(week.concepts.length, "concept")} will be removed with it. Done ticks and past lessons are kept.`,
+                    }}
+                >
+                    <TeachingTimeField defaultValue={week.durationMin} />
+                </FormDialog>
+            }
+        >
             {week.concepts.length === 0 && <p className="px-3 py-3 text-base text-zinc-600 dark:text-zinc-400">No concepts yet</p>}
-            <ol className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                {week.concepts.map((concept, index) => (
-                    <li key={concept.id} className="flex flex-col gap-2 px-3 py-2.5">
-                        <span className="text-base text-zinc-900 dark:text-zinc-100">
-                            {concept.name}
-                            {concept.addedForStudent && <span className="ml-2 inline-block rounded-md bg-violet-100 px-2 text-sm font-medium text-violet-900 dark:bg-violet-950 dark:text-violet-200">Added for {student.name}</span>}
-                        </span>
-                        <div className="flex items-center justify-end gap-1">
-                            {week.concepts.length > 1 && (
-                                <MoveButtons action={actions.moveConcept.bind(null, week.id, concept.id)} name={concept.name} isFirst={index === 0} isLast={index === week.concepts.length - 1} />
-                            )}
-                            <FormDialog
-                                title="Edit concept"
-                                trigger={
-                                    <>
-                                        <PenIcon />
-                                        Edit
-                                    </>
-                                }
-                                triggerLabel={`Edit concept ${concept.name}`}
-                                triggerClassName={inlineEditButtonClass}
-                                submitLabel="Save concept"
-                                action={actions.updateConcept.bind(null, week.id, concept.id)}
-                                remove={{
-                                    action: actions.removeConcept.bind(null, week.id, concept.id),
-                                    label: "Remove from syllabus",
-                                    confirm: `Take “${concept.name}” out of ${student.name}'s syllabus? You can add it back later. Done ticks and past lessons are kept.`,
-                                }}
-                            >
-                                {concept.addedForStudent ? (
-                                    <ConceptFields defaultName={concept.name} />
-                                ) : (
-                                    <p className="text-base text-zinc-700 dark:text-zinc-300">
-                                        <span className="font-semibold text-zinc-900 dark:text-zinc-50">{concept.name}</span> is from the standard syllabus, so only an admin can rename it.
-                                    </p>
-                                )}
-                                <WeekSelect weekOptions={weekOptions} defaultValue={week.id} />
-                            </FormDialog>
-                        </div>
-                    </li>
-                ))}
-            </ol>
+            <SortableList
+                label={`Concepts in week ${week.number}`}
+                action={actions.reorderConcepts.bind(null, week.id)}
+                className="divide-y divide-zinc-200 dark:divide-zinc-800"
+                itemClassName="pl-1"
+                items={week.concepts.map((concept) => ({ id: concept.id, name: concept.name, content: <ConceptRow concept={concept} week={week} student={student} weekOptions={weekOptions} /> }))}
+            />
 
             <div className="flex flex-col gap-2 border-t border-zinc-200 p-2 dark:border-zinc-800">
                 <FormDialog
@@ -292,7 +239,48 @@ function WeekEditor({ week, student, isFirst, isLast, weekOptions, addBackGroups
                     </FormDialog>
                 )}
             </div>
-        </section>
+        </WeekSection>
+    );
+}
+
+/** A concept's name, then its Edit button on a line of its own. */
+function ConceptRow({ concept, week, student, weekOptions }: { concept: Concept; week: Week; student: Student; weekOptions: WeekOption[] }) {
+    return (
+        <div className="flex flex-col gap-2 py-2.5 pr-3">
+            <span className="text-base text-zinc-900 dark:text-zinc-100">
+                {concept.name}
+                {concept.addedForStudent && <span className="ml-2 inline-block rounded-md bg-violet-100 px-2 text-sm font-medium text-violet-900 dark:bg-violet-950 dark:text-violet-200">Added for {student.name}</span>}
+            </span>
+            <div className="flex justify-end">
+                <FormDialog
+                    title="Edit concept"
+                    trigger={
+                        <>
+                            <PenIcon />
+                            Edit
+                        </>
+                    }
+                    triggerLabel={`Edit concept ${concept.name}`}
+                    triggerClassName={inlineEditButtonClass}
+                    submitLabel="Save concept"
+                    action={actions.updateConcept.bind(null, week.id, concept.id)}
+                    remove={{
+                        action: actions.removeConcept.bind(null, week.id, concept.id),
+                        label: "Remove from syllabus",
+                        confirm: `Take “${concept.name}” out of ${student.name}'s syllabus? You can add it back later. Done ticks and past lessons are kept.`,
+                    }}
+                >
+                    {concept.addedForStudent ? (
+                        <ConceptFields defaultName={concept.name} />
+                    ) : (
+                        <p className="text-base text-zinc-700 dark:text-zinc-300">
+                            <span className="font-semibold text-zinc-900 dark:text-zinc-50">{concept.name}</span> is from the standard syllabus, so only an admin can rename it.
+                        </p>
+                    )}
+                    <WeekSelect weekOptions={weekOptions} defaultValue={week.id} />
+                </FormDialog>
+            </div>
+        </div>
     );
 }
 

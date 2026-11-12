@@ -1,10 +1,11 @@
 "use server";
 import { redirect } from "next/navigation";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { chapter, concept, subject, test, testChapter, week, worksheet, worksheetConcept } from "@/db/schema";
 import { isTestType } from "@/lib/tests";
 import { getAdminSession } from "@/lib/session";
+import { readOrder } from "@/lib/reorder";
 import { assertFound, InvalidInput, optionalWholeNumber, runMutation, text, wholeNumber, type FormResult } from "@/lib/form-data";
 
 export type { FormResult };
@@ -113,30 +114,15 @@ export async function deleteConcept(id: string) {
     return mutate(() => db.delete(concept).where(eq(concept.id, id)));
 }
 
-/** Swaps a concept with its neighbour, then renumbers the week 1…n to close any gaps or ties. */
-export async function moveConcept(id: string, direction: "up" | "down") {
+/** Saves a week's concepts in a new order, from a drag-and-drop. */
+export async function reorderConcepts(weekId: string, orderedIds: string[]) {
     return mutate(() =>
         db.transaction(async (tx) => {
-            if (direction !== "up" && direction !== "down") throw new InvalidInput("Invalid direction.");
-            const [target] = await tx.select({ weekId: concept.weekId }).from(concept).where(eq(concept.id, id));
-            // Only standard concepts have a week; concepts added for one student are edited from their syllabus
-            const weekId = target?.weekId;
-            if (!weekId) throw new InvalidInput("This item no longer exists. Refresh and try again.");
-
-            // Lock the week's concepts so concurrent moves can't interleave
-            const ordered = await tx
-                .select({ id: concept.id, position: concept.position })
-                .from(concept)
-                .where(eq(concept.weekId, weekId))
-                .orderBy(asc(concept.position), asc(concept.createdAt))
-                .for("update");
-            const from = ordered.findIndex((c) => c.id === id);
-            const to = direction === "up" ? from - 1 : from + 1;
-            if (to < 0 || to >= ordered.length) return; // already at the edge
-            [ordered[from], ordered[to]] = [ordered[to], ordered[from]];
-
-            for (const [index, item] of ordered.entries()) {
-                if (item.position !== index + 1) await tx.update(concept).set({ position: index + 1 }).where(eq(concept.id, item.id));
+            // Lock the week's concepts so concurrent reorders can't interleave
+            const current = await tx.select({ id: concept.id, position: concept.position }).from(concept).where(eq(concept.weekId, weekId)).for("update");
+            const positions = new Map(current.map((c) => [c.id, c.position]));
+            for (const [index, id] of readOrder(orderedIds, current.map((c) => c.id)).entries()) {
+                if (positions.get(id) !== index + 1) await tx.update(concept).set({ position: index + 1 }).where(eq(concept.id, id));
             }
         }),
     );

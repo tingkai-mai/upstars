@@ -4,19 +4,15 @@ import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { concept, studentSyllabus, studentWeek, studentWeekConcept, week } from "@/db/schema";
 import { InvalidInput, text, wholeNumber, type FormResult } from "@/lib/form-data";
+import { readOrder } from "@/lib/reorder";
 import { asStudentEditor } from "../permissions";
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
-type Direction = "up" | "down";
 type OwnedWeek = { id: string; studentId: string; subjectId: string };
 type SyllabusWeek = Awaited<ReturnType<typeof lockSyllabus>>[number];
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const GONE = "This item no longer exists. Refresh and try again.";
-
-function assertDirection(direction: string): asserts direction is Direction {
-    if (direction !== "up" && direction !== "down") throw new InvalidInput("Invalid direction.");
-}
 
 function readDuration(formData: FormData) {
     return wholeNumber(formData, "durationMin", "Teaching time", { max: 1_440 });
@@ -108,18 +104,13 @@ export async function resetSyllabus(studentId: string, subjectId: string): Promi
 
 // Chapters
 
-/** Moves a chapter, with all its weeks, before or after its neighbour. */
-export async function moveChapter(studentId: string, subjectId: string, chapterId: string, direction: Direction): Promise<FormResult> {
+/** Saves the chapters in a new order, from a drag-and-drop; each chapter's weeks move with it. */
+export async function reorderChapters(studentId: string, subjectId: string, orderedIds: string[]): Promise<FormResult> {
     if (!UUID.test(subjectId)) return { error: GONE };
     return asStudentEditor(studentId, () =>
         db.transaction(async (tx) => {
-            assertDirection(direction);
             const weeks = await lockSyllabus(tx, studentId, subjectId);
-            const chapterOrder = [...new Set(weeks.map((w) => w.chapterId))];
-            const from = chapterOrder.indexOf(chapterId);
-            const to = direction === "up" ? from - 1 : from + 1;
-            if (from === -1 || to < 0 || to >= chapterOrder.length) return; // gone, or already at the edge
-            [chapterOrder[from], chapterOrder[to]] = [chapterOrder[to], chapterOrder[from]];
+            const chapterOrder = readOrder(orderedIds, [...new Set(weeks.map((w) => w.chapterId))]);
             await saveWeekOrder(tx, weeks, chapterOrder.flatMap((id) => weeks.filter((w) => w.chapterId === id).map((w) => w.id)));
         }),
     );
@@ -174,19 +165,20 @@ export async function removeWeek(weekId: string): Promise<FormResult> {
     });
 }
 
-/** Swaps a week with the next one up or down in the same chapter. */
-export async function moveWeek(weekId: string, direction: Direction): Promise<FormResult> {
-    return asWeekEditor(weekId, async (tx, _owned, weeks) => {
-        assertDirection(direction);
-        const from = weeks.findIndex((w) => w.id === weekId);
-        if (from === -1) return; // removed meanwhile
-        const sameChapter = (w: { chapterId: string }) => w.chapterId === weeks[from].chapterId;
-        const to = direction === "up" ? weeks.findLastIndex((w, i) => i < from && sameChapter(w)) : weeks.findIndex((w, i) => i > from && sameChapter(w));
-        if (to === -1) return; // already at the edge of its chapter
-        const orderedIds = weeks.map((w) => w.id);
-        [orderedIds[from], orderedIds[to]] = [orderedIds[to], orderedIds[from]];
-        await saveWeekOrder(tx, weeks, orderedIds);
-    });
+/** Saves a chapter's weeks in a new order, from a drag-and-drop. Other chapters' weeks stay where they are. */
+export async function reorderWeeks(studentId: string, subjectId: string, chapterId: string, orderedIds: string[]): Promise<FormResult> {
+    if (!UUID.test(subjectId)) return { error: GONE };
+    return asStudentEditor(studentId, () =>
+        db.transaction(async (tx) => {
+            const weeks = await lockSyllabus(tx, studentId, subjectId);
+            // The places this chapter's weeks hold in the syllabus, refilled in the new order
+            const slots = weeks.flatMap((w, index) => (w.chapterId === chapterId ? [index] : []));
+            const chapterOrder = readOrder(orderedIds, slots.map((slot) => weeks[slot].id));
+            const allIds = weeks.map((w) => w.id);
+            slots.forEach((slot, index) => (allIds[slot] = chapterOrder[index]));
+            await saveWeekOrder(tx, weeks, allIds);
+        }),
+    );
 }
 
 // Concepts
@@ -255,25 +247,20 @@ export async function removeConcept(weekId: string, conceptId: string): Promise<
     return asWeekEditor(weekId, (tx) => tx.delete(studentWeekConcept).where(and(eq(studentWeekConcept.studentWeekId, weekId), eq(studentWeekConcept.conceptId, conceptId))));
 }
 
-/** Swaps a concept with its neighbour in the week, then renumbers the week 1…n. */
-export async function moveConcept(weekId: string, conceptId: string, direction: Direction): Promise<FormResult> {
+/** Saves a week's concepts in a new order, from a drag-and-drop. */
+export async function reorderConcepts(weekId: string, orderedIds: string[]): Promise<FormResult> {
     return asWeekEditor(weekId, async (tx) => {
-        assertDirection(direction);
-        const ordered = await tx
+        const current = await tx
             .select({ conceptId: studentWeekConcept.conceptId, position: studentWeekConcept.position })
             .from(studentWeekConcept)
-            .where(eq(studentWeekConcept.studentWeekId, weekId))
-            .orderBy(asc(studentWeekConcept.position));
-        const from = ordered.findIndex((c) => c.conceptId === conceptId);
-        const to = direction === "up" ? from - 1 : from + 1;
-        if (from === -1 || to < 0 || to >= ordered.length) return; // gone, or already at the edge
-        [ordered[from], ordered[to]] = [ordered[to], ordered[from]];
-        for (const [index, item] of ordered.entries()) {
-            if (item.position !== index + 1) {
+            .where(eq(studentWeekConcept.studentWeekId, weekId));
+        const positions = new Map(current.map((c) => [c.conceptId, c.position]));
+        for (const [index, conceptId] of readOrder(orderedIds, current.map((c) => c.conceptId)).entries()) {
+            if (positions.get(conceptId) !== index + 1) {
                 await tx
                     .update(studentWeekConcept)
                     .set({ position: index + 1 })
-                    .where(and(eq(studentWeekConcept.studentWeekId, weekId), eq(studentWeekConcept.conceptId, item.conceptId)));
+                    .where(and(eq(studentWeekConcept.studentWeekId, weekId), eq(studentWeekConcept.conceptId, conceptId)));
             }
         }
     });

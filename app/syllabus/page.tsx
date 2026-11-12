@@ -9,10 +9,10 @@ import { addButtonClass, compactPrimaryButtonClass, inlineEditButtonClass, secon
 import { getSubjectPlan, type Chapter, type SubjectPlan, type Week } from "./queries";
 import * as actions from "./actions";
 import { ChapterFields, ConceptFields, WeekFields } from "./fields";
-import { MoveButtons } from "@/components/move-buttons";
+import { SortableList } from "@/components/sortable-list";
 import { resolveSelection } from "./selection";
 import { SyllabusHeader } from "./syllabus-header";
-import { Accordion, EmptyState, formatWeeks } from "./ui";
+import { Accordion, EmptyState, formatWeeks, WeekSection } from "./ui";
 
 export const metadata: Metadata = { title: "Syllabus" };
 
@@ -46,7 +46,7 @@ async function SyllabusTab({ searchParams }: Pick<Props, "searchParams">) {
                     {editing ? (
                         // Sticky, so Done stays in reach while editing further down
                         <div className="sticky top-14 z-10 flex items-center gap-3 rounded-2xl bg-amber-50 p-3 shadow-sm sm:p-4 dark:bg-amber-950">
-                            <p className="flex-1 text-base text-amber-900 dark:text-amber-200">Editing. Changes save as you go. Open a chapter to change its weeks and concepts.</p>
+                            <p className="flex-1 text-base text-amber-900 dark:text-amber-200">Editing. Changes save as you go. Open a chapter to change its weeks and concepts, and drag the dots to reorder concepts.</p>
                             <Link href={`/syllabus?subject=${plan.subject.id}`} replace scroll={false} className={`${compactPrimaryButtonClass} gap-2`}>
                                 <CheckIcon />
                                 Done
@@ -172,15 +172,16 @@ function ChapterTable({ chapter, plan, editing, defaultOpen }: { chapter: Chapte
     );
 }
 
+const conceptListClass = "divide-y divide-zinc-200 dark:divide-zinc-800";
+
 /** A week's heading, then its concepts in order. Editing adds controls on a line of their own under each name. */
 function WeekBlock({ week, editing, chapterOptions }: { week: Week; editing: boolean; chapterOptions: { id: string; name: string }[] }) {
     return (
-        <section className="flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
-            <div className="flex flex-wrap items-center justify-between gap-2 bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-                    Week {week.number} <span className="font-normal text-zinc-600 dark:text-zinc-400">· {formatMinutes(week.durationMin)}</span>
-                </h4>
-                {editing && (
+        <WeekSection
+            number={week.number}
+            summary={`${pluralize(week.concepts.length, "concept")} · ${formatMinutes(week.durationMin)}`}
+            actions={
+                editing && (
                     <FormDialog
                         title={`Edit week ${week.number}`}
                         trigger={
@@ -201,40 +202,53 @@ function WeekBlock({ week, editing, chapterOptions }: { week: Week; editing: boo
                     >
                         <WeekFields defaults={week} chapters={chapterOptions} />
                     </FormDialog>
-                )}
-            </div>
-
+                )
+            }
+        >
             {week.concepts.length === 0 && <p className="px-3 py-3 text-base text-zinc-600 dark:text-zinc-400">No concepts yet</p>}
-            <ol className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                {week.concepts.map((concept, index) => (
-                    <li key={concept.id} className="flex flex-col gap-2 px-3 py-2.5">
-                        <span className="text-base text-zinc-900 dark:text-zinc-100">{concept.name}</span>
-                        {editing && (
-                            <div className="flex items-center justify-end gap-1">
-                                {week.concepts.length > 1 && (
-                                    <MoveButtons action={actions.moveConcept.bind(null, concept.id)} name={concept.name} isFirst={index === 0} isLast={index === week.concepts.length - 1} />
-                                )}
-                                <FormDialog
-                                    title="Edit concept"
-                                    trigger={
-                                        <>
-                                            <PenIcon />
-                                            Edit
-                                        </>
-                                    }
-                                    triggerLabel={`Edit concept ${concept.name}`}
-                                    triggerClassName={inlineEditButtonClass}
-                                    submitLabel="Save concept"
-                                    action={actions.updateConcept.bind(null, concept.id)}
-                                    remove={{ action: actions.deleteConcept.bind(null, concept.id), label: "Delete concept", confirm: `Delete “${concept.name}”? It will also be removed from any worksheets and students' custom syllabuses.` }}
-                                >
-                                    <ConceptFields defaultName={concept.name} />
-                                </FormDialog>
+            {editing ? (
+                <SortableList
+                    label={`Concepts in week ${week.number}`}
+                    action={actions.reorderConcepts.bind(null, week.id)}
+                    className={conceptListClass}
+                    itemClassName="pl-1"
+                    items={week.concepts.map((concept) => ({
+                        id: concept.id,
+                        name: concept.name,
+                        content: (
+                            <div className="flex flex-col gap-2 py-2.5 pr-3">
+                                <span className="text-base text-zinc-900 dark:text-zinc-100">{concept.name}</span>
+                                <div className="flex justify-end">
+                                    <FormDialog
+                                        title="Edit concept"
+                                        trigger={
+                                            <>
+                                                <PenIcon />
+                                                Edit
+                                            </>
+                                        }
+                                        triggerLabel={`Edit concept ${concept.name}`}
+                                        triggerClassName={inlineEditButtonClass}
+                                        submitLabel="Save concept"
+                                        action={actions.updateConcept.bind(null, concept.id)}
+                                        remove={{ action: actions.deleteConcept.bind(null, concept.id), label: "Delete concept", confirm: `Delete “${concept.name}”? It will also be removed from any worksheets and students' custom syllabuses.` }}
+                                    >
+                                        <ConceptFields defaultName={concept.name} />
+                                    </FormDialog>
+                                </div>
                             </div>
-                        )}
-                    </li>
-                ))}
-            </ol>
+                        ),
+                    }))}
+                />
+            ) : (
+                <ol className={conceptListClass}>
+                    {week.concepts.map((concept) => (
+                        <li key={concept.id} className="px-3 py-2.5 text-base text-zinc-900 dark:text-zinc-100">
+                            {concept.name}
+                        </li>
+                    ))}
+                </ol>
+            )}
 
             {editing && (
                 <div className="border-t border-zinc-200 p-2 dark:border-zinc-800">
@@ -250,6 +264,6 @@ function WeekBlock({ week, editing, chapterOptions }: { week: Week; editing: boo
                     </FormDialog>
                 </div>
             )}
-        </section>
+        </WeekSection>
     );
 }

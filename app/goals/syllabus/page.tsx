@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { pluralize } from "@/lib/format";
-import { Accordion, EmptyState, formatWeeks } from "@/app/syllabus/ui";
+import { Accordion, EmptyState, formatWeeks, WeekSection } from "@/app/syllabus/ui";
 import type { Chapter, Week } from "@/app/syllabus/queries";
 import { loadProgress, type ProgressData } from "../context";
 import { GoalsHeader, percent, ProgressBar } from "../goals-header";
@@ -51,8 +51,10 @@ async function SyllabusProgress({ searchParams }: Pick<Props, "searchParams">) {
     }
 
     const conceptLessons = await listConceptLessons(student.id, subjectId);
-    // Open the chapter the student is up to: the first with a concept not yet done
-    const currentChapterId = data.plan.chapters.find((c) => c.weeks.some((w) => w.concepts.some((concept) => !data.completion.concepts.has(concept.id))))?.id;
+    // Open the chapter and week the student is up to: the first with a concept not yet done
+    const isUnfinished = (w: Week) => w.concepts.some((concept) => !data.completion.concepts.has(concept.id));
+    const currentChapter = data.plan.chapters.find((c) => c.weeks.some(isUnfinished));
+    const currentWeekId = currentChapter?.weeks.find(isUnfinished)?.id;
 
     return (
         <>
@@ -72,7 +74,7 @@ async function SyllabusProgress({ searchParams }: Pick<Props, "searchParams">) {
                 </p>
                 {data.plan.chapters.length === 0 && <EmptyState>{data.plan.custom ? "This syllabus has no weeks yet." : "This subject has no chapters yet."}</EmptyState>}
                 {data.plan.chapters.map((chapter) => (
-                    <ChapterProgress key={chapter.id} chapter={chapter} studentId={student.id} data={data} conceptLessons={conceptLessons} defaultOpen={chapter.id === currentChapterId} />
+                    <ChapterProgress key={chapter.id} chapter={chapter} studentId={student.id} data={data} conceptLessons={conceptLessons} defaultOpen={chapter.id === currentChapter?.id} currentWeekId={currentWeekId} />
                 ))}
             </section>
         </>
@@ -115,9 +117,9 @@ function SyllabusSource({ student, isStudent, custom, canEdit, editHref, customi
 }
 
 type Lessons = Map<string, ConceptLesson[]>;
-type ChapterProps = { chapter: Chapter; studentId: string; data: ProgressData; conceptLessons: Lessons; defaultOpen: boolean };
+type ChapterProps = { chapter: Chapter; studentId: string; data: ProgressData; conceptLessons: Lessons; defaultOpen: boolean; currentWeekId?: string };
 
-function ChapterProgress({ chapter, studentId, data, conceptLessons, defaultOpen }: ChapterProps) {
+function ChapterProgress({ chapter, studentId, data, conceptLessons, defaultOpen, currentWeekId }: ChapterProps) {
     const concepts = chapter.weeks.flatMap((w) => w.concepts);
     const done = concepts.filter((c) => data.completion.concepts.has(c.id)).length;
     const value = percent(done, concepts.length);
@@ -143,27 +145,27 @@ function ChapterProgress({ chapter, studentId, data, conceptLessons, defaultOpen
             {chapter.weeks.length === 0 ? (
                 <EmptyState>This chapter has no weeks yet.</EmptyState>
             ) : (
-                chapter.weeks.map((week) => <WeekProgress key={week.id} week={week} studentId={studentId} data={data} conceptLessons={conceptLessons} />)
+                chapter.weeks.map((week) => (
+                    <WeekProgress key={week.id} week={week} studentId={studentId} data={data} conceptLessons={conceptLessons} defaultOpen={week.id === currentWeekId} />
+                ))
             )}
         </Accordion>
     );
 }
 
 /** A week's heading, then one row per concept: tick and name, with when it was taught underneath. */
-function WeekProgress({ week, studentId, data, conceptLessons }: { week: Week; studentId: string; data: ProgressData; conceptLessons: Lessons }) {
+type WeekProps = { week: Week; studentId: string; data: ProgressData; conceptLessons: Lessons; defaultOpen: boolean };
+
+function WeekProgress({ week, studentId, data, conceptLessons, defaultOpen }: WeekProps) {
     const done = week.concepts.filter((c) => data.completion.concepts.has(c.id)).length;
 
     return (
-        <section className="flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
-            <div className="flex flex-wrap items-center justify-between gap-2 bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-                    Week {week.number}{" "}
-                    <span className="font-normal text-zinc-600 dark:text-zinc-400">
-                        · {done} of {week.concepts.length} done
-                    </span>
-                </h4>
-                {data.canEdit && week.concepts.length > 1 && <WeekCompletionButton studentId={studentId} conceptIds={week.concepts.map((c) => c.id)} doneCount={done} weekNumber={week.number} />}
-            </div>
+        <WeekSection
+            number={week.number}
+            summary={`${done} of ${week.concepts.length} done`}
+            defaultOpen={defaultOpen}
+            actions={data.canEdit && week.concepts.length > 1 && <WeekCompletionButton studentId={studentId} conceptIds={week.concepts.map((c) => c.id)} doneCount={done} weekNumber={week.number} />}
+        >
             {week.concepts.length === 0 ? (
                 <p className="px-3 py-3 text-base text-zinc-600 dark:text-zinc-400">No concepts yet</p>
             ) : (
@@ -184,6 +186,6 @@ function WeekProgress({ week, studentId, data, conceptLessons }: { week: Week; s
                     })}
                 </ul>
             )}
-        </section>
+        </WeekSection>
     );
 }
